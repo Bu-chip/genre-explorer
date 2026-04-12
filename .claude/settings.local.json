@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(cp -r /tmp/genere-explorer/* C:/Dev/genere-explorer/)",
+      "Bash(cp /tmp/genere-explorer/.gitignore C:/Dev/genere-explorer/)",
+      "Bash(npm install:*)",
+      "Bash(npx vite:*)",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(curl -sL -o data/raw/genre_attrs.csv \"https://raw.githubusercontent.com/AyrtonB/EveryNoise-Watch/main/data/genre_attrs.csv\")",
+      "Bash(python scripts/parse-genres.py)",
+      "Bash(curl -s http://localhost:5173/data/genres_index.json)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(f'{len\\(d\\)} genres, first: {d[0][\\\\\"name\\\\\"]}'\\)\")",
+      "Bash(npx eslint:*)",
+      "mcp__Claude_Preview__preview_start"
+    ]
+  }
+}
