@@ -1,21 +1,25 @@
 .app {
   display: flex;
   flex-direction: column;
-  align-items: center;
   min-height: 100vh;
-  padding: 3rem 1.5rem;
-  gap: 2.5rem;
+  padding: 0 1.5rem;
 }
 
-.app__header {
+/* Hero: centered title shown before first genre selection */
+.app__hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20vh 0 2rem;
   text-align: center;
 }
 
 .app__title {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(1.6rem, 4vw, 2.4rem);
-  letter-spacing: -0.02em;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  letter-spacing: -0.03em;
   color: var(--text-primary);
 }
 
@@ -28,13 +32,35 @@
   margin-top: 0.3rem;
 }
 
-.app__main {
+/* Initial controls: centered below hero */
+.app__controls {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2.5rem;
+  gap: 1.5rem;
+  padding: 1rem 0;
+}
+
+/* Nav bar: compact top bar after genre is selected */
+.app__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #1a1d22;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--bg-primary);
+}
+
+.app__main {
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  max-width: 600px;
+  max-width: 760px;
+  padding: 2rem 0 4rem;
 }
 
 .app__loading,
@@ -42,6 +68,8 @@
   font-family: var(--font-mono);
   font-size: 0.8rem;
   color: var(--text-secondary);
+  padding: 3rem 0;
+  text-align: center;
 }
 
 .app__error {

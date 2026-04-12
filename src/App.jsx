@@ -12,6 +12,7 @@ function App() {
 
   const handleResult = useCallback((genre) => {
     setSelectedGenre(genre)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [])
 
   if (error) {
@@ -22,38 +23,44 @@ function App() {
     )
   }
 
+  const hasGenre = !!selectedGenre
+
   return (
     <div className="app">
-      <header className="app__header">
-        <h1 className="app__title">Random Genre Explorer</h1>
-        {genres && (
-          <p className="app__subtitle">
-            {genres.length.toLocaleString()} genres
-          </p>
-        )}
-      </header>
+      {loading ? (
+        <p className="app__loading">loading genres...</p>
+      ) : hasGenre ? (
+        <>
+          <nav className="app__nav">
+            <SlotMachine genres={genres} onResult={handleResult} compact />
+            <SearchBox genres={genres} onSelect={handleResult} />
+          </nav>
 
-      <main className="app__main">
-        {loading ? (
-          <p className="app__loading">loading genres...</p>
-        ) : (
-          <>
+          <main className="app__main">
+            <GenreCard key={selectedGenre.slug} genre={selectedGenre} />
+            <NearbyGenres
+              key={`nearby-${selectedGenre.slug}`}
+              genre={selectedGenre}
+              allGenres={genres}
+              onSelect={handleResult}
+            />
+          </main>
+        </>
+      ) : (
+        <>
+          <header className="app__hero">
+            <h1 className="app__title">Random Genre Explorer</h1>
+            <p className="app__subtitle">
+              {genres.length.toLocaleString()} genres
+            </p>
+          </header>
+
+          <div className="app__controls">
             <SlotMachine genres={genres} onResult={handleResult} />
             <SearchBox genres={genres} onSelect={handleResult} />
-            {selectedGenre && (
-              <>
-                <GenreCard key={selectedGenre.slug} genre={selectedGenre} />
-                <NearbyGenres
-                  key={`nearby-${selectedGenre.slug}`}
-                  genre={selectedGenre}
-                  allGenres={genres}
-                  onSelect={handleResult}
-                />
-              </>
-            )}
-          </>
-        )}
-      </main>
+          </div>
+        </>
+      )}
     </div>
   )
 }

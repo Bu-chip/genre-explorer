@@ -1,4 +1,5 @@
 import { useLastfm } from '../hooks/useLastfm'
+import { ensureContrast } from '../utils/color'
 import './GenreCard.css'
 
 const LISTEN_LINKS = [
@@ -21,19 +22,22 @@ export function GenreCard({ genre }) {
 
   if (!genre) return null
 
+  const displayColor = ensureContrast(genre.color)
+
   return (
-    <div className="genre-card" style={{ '--genre-color': genre.color }}>
-      <h2 className="genre-card__name">{genre.name}</h2>
+    <div className="genre-card" style={{ '--genre-color': displayColor }}>
+      <div className="genre-card__header">
+        <h2 className="genre-card__name">{genre.name}</h2>
+        <p className="genre-card__meta">
+          {genre.x},{genre.y} {genre.color}
+        </p>
+      </div>
+
+      <div className="genre-card__color-swatch" />
 
       {lastfm?.summary && (
         <p className="genre-card__desc">{lastfm.summary}</p>
       )}
-
-      <div className="genre-card__color-swatch" />
-
-      <p className="genre-card__meta">
-        {genre.x},{genre.y} {genre.color}
-      </p>
 
       <nav className="genre-card__links">
         {LISTEN_LINKS.map(({ label, url }, i) => (

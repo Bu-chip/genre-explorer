@@ -5,7 +5,7 @@ const SPIN_DURATION = 1400
 const TICK_START = 30
 const TICK_END = 180
 
-export function SlotMachine({ genres, onResult }) {
+export function SlotMachine({ genres, onResult, compact }) {
   const [display, setDisplay] = useState(null)
   const [spinning, setSpinning] = useState(false)
   const rafRef = useRef(null)
@@ -29,11 +29,9 @@ export function SlotMachine({ genres, onResult }) {
         const interval = TICK_START + (TICK_END - TICK_START) * (progress * progress)
         const tickIndex = Math.floor(elapsed / interval)
 
-        // Update display on each new tick
         if (!rafRef.current || rafRef.current !== tickIndex) {
           rafRef.current = tickIndex
-          const random = pickRandom()
-          setDisplay(random)
+          setDisplay(pickRandom())
         }
 
         requestAnimationFrame(tick)
@@ -47,6 +45,18 @@ export function SlotMachine({ genres, onResult }) {
 
     requestAnimationFrame(tick)
   }, [spinning, genres, pickRandom, onResult])
+
+  if (compact) {
+    return (
+      <button
+        className="slot-machine__button"
+        onClick={spin}
+        disabled={spinning}
+      >
+        {spinning && display ? display.name : 'random'}
+      </button>
+    )
+  }
 
   return (
     <div className="slot-machine">

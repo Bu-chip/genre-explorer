@@ -1,19 +1,25 @@
 .genre-card {
   width: 100%;
-  max-width: 700px;
-  animation: card-enter 0.35s ease-out;
-  padding: 2rem 0;
+  padding: 0 0 2rem;
+  animation: card-fade-in 0.3s ease-out;
 }
 
-@keyframes card-enter {
-  from {
+@keyframes card-fade-in {
+  0% {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(10px);
   }
-  to {
+  100% {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.genre-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
 }
 
 .genre-card__name {
@@ -27,47 +33,64 @@
   margin: 0;
 }
 
-.genre-card__desc {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  line-height: 1.6;
-  color: var(--text-secondary);
-  margin: 1rem 0 0;
-  max-width: 580px;
-}
-
-.genre-card__color-swatch {
-  width: 100%;
-  height: 3px;
-  background-color: var(--genre-color);
-  margin: 1.5rem 0 1.25rem;
-  opacity: 0.8;
-}
-
 .genre-card__meta {
   font-family: var(--font-mono);
-  font-size: 0.65rem;
-  color: var(--text-secondary);
+  font-size: 0.55rem;
+  color: var(--mint-data);
   letter-spacing: 0.06em;
-  opacity: 0.6;
-  margin: 0;
+  opacity: 0.4;
+  margin: 0.4rem 0 0;
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+/* Color swatch: expands from 0 to full width */
+.genre-card__color-swatch {
+  height: 3px;
+  background-color: var(--genre-color);
+  margin: 1.5rem 0 1.5rem;
+  opacity: 0.8;
+  animation: swatch-expand 0.4s ease-out;
+}
+
+@keyframes swatch-expand {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+/* Description fades in with delay */
+.genre-card__desc {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  margin: 0 0 1.5rem;
+  max-width: 600px;
+  animation: desc-fade-in 0.3s ease-out 0.2s both;
+}
+
+@keyframes desc-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .genre-card__links {
-  margin-top: 1.75rem;
+  margin: 0;
 }
 
 .genre-card__links a {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
-  color: var(--text-secondary);
+  font-size: 0.7rem;
+  color: var(--wisteria);
   text-decoration: none;
   letter-spacing: 0.02em;
-  transition: color 0.15s;
+  transition: color 0.2s;
 }
 
 .genre-card__links a:hover {
-  color: var(--genre-color);
+  color: var(--lime);
 }
 
 .genre-card__sep {
