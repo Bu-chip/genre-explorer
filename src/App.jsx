@@ -1,7 +1,9 @@
 import { useState, useCallback } from 'react'
 import { useGenres } from './hooks/useGenres'
 import { SlotMachine } from './components/SlotMachine'
+import { SearchBox } from './components/SearchBox'
 import { GenreCard } from './components/GenreCard'
+import { NearbyGenres } from './components/NearbyGenres'
 import './App.css'
 
 function App() {
@@ -37,8 +39,17 @@ function App() {
         ) : (
           <>
             <SlotMachine genres={genres} onResult={handleResult} />
+            <SearchBox genres={genres} onSelect={handleResult} />
             {selectedGenre && (
-              <GenreCard key={selectedGenre.slug} genre={selectedGenre} />
+              <>
+                <GenreCard key={selectedGenre.slug} genre={selectedGenre} />
+                <NearbyGenres
+                  key={`nearby-${selectedGenre.slug}`}
+                  genre={selectedGenre}
+                  allGenres={genres}
+                  onSelect={handleResult}
+                />
+              </>
             )}
           </>
         )}

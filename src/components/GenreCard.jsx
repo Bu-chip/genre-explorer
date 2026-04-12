@@ -1,3 +1,4 @@
+import { useLastfm } from '../hooks/useLastfm'
 import './GenreCard.css'
 
 const LISTEN_LINKS = [
@@ -16,11 +17,17 @@ const LISTEN_LINKS = [
 ]
 
 export function GenreCard({ genre }) {
+  const lastfm = useLastfm(genre?.name)
+
   if (!genre) return null
 
   return (
     <div className="genre-card" style={{ '--genre-color': genre.color }}>
       <h2 className="genre-card__name">{genre.name}</h2>
+
+      {lastfm?.summary && (
+        <p className="genre-card__desc">{lastfm.summary}</p>
+      )}
 
       <div className="genre-card__color-swatch" />
 
@@ -38,6 +45,12 @@ export function GenreCard({ genre }) {
           </span>
         ))}
       </nav>
+
+      {lastfm?.topTrack && (
+        <p className="genre-card__track">
+          {'\u25b6'} {lastfm.topTrack.artist} — {lastfm.topTrack.title}
+        </p>
+      )}
     </div>
   )
 }

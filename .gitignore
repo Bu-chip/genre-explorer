@@ -23,5 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
+# Environment variables
+.env
+
 # Raw data sources (CSV, etc.) — not tracked; generated JSON is tracked
 data/raw/
