@@ -1,25 +1,36 @@
 import { useMemo } from 'react'
+import { motion } from 'framer-motion'
 import { getRelatedGenres } from '../utils/nearest'
-import { ensureContrast } from '../utils/color'
 import './NearbyGenres.css'
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 8 },
+  visible: { opacity: 1, y: 0 },
+}
 
 function GenreList({ items, onSelect }) {
   return (
-    <ul className="related__list">
+    <motion.ul
+      className="related__list"
+      initial="hidden"
+      animate="visible"
+      transition={{ staggerChildren: 0.05 }}
+    >
       {items.map(({ genre: g, similarity }) => (
-        <li key={g.slug}>
-          <button
+        <motion.li key={g.slug} variants={itemVariants}>
+          <motion.button
             className="related__row"
-            style={{ '--row-color': ensureContrast(g.color) }}
             onClick={() => onSelect(g)}
+            whileHover={{ x: 2 }}
+            transition={{ duration: 0.15 }}
           >
             <span className="related__dot" style={{ backgroundColor: g.color }} />
             <span className="related__name">{g.name}</span>
             <span className="related__pct">{similarity}%</span>
-          </button>
-        </li>
+          </motion.button>
+        </motion.li>
       ))}
-    </ul>
+    </motion.ul>
   )
 }
 
@@ -32,11 +43,11 @@ export function NearbyGenres({ genre, allGenres, onSelect }) {
   return (
     <div className="related">
       <div className="related__col">
-        <h3 className="related__title related__title--close">close</h3>
+        <h3 className="related__title">close</h3>
         <GenreList items={nearest} onSelect={onSelect} />
       </div>
       <div className="related__col">
-        <h3 className="related__title related__title--far">far</h3>
+        <h3 className="related__title">far</h3>
         <GenreList items={farthest} onSelect={onSelect} />
       </div>
     </div>

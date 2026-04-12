@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useGenres } from './hooks/useGenres'
-import { ensureContrast } from './utils/color'
 import { SlotMachine } from './components/SlotMachine'
 import { SearchBox } from './components/SearchBox'
 import { GenreCard } from './components/GenreCard'
@@ -25,14 +25,10 @@ function App() {
   }
 
   const hasGenre = !!selectedGenre
-  const glowColor = hasGenre ? ensureContrast(selectedGenre.color) : null
 
   return (
-    <div
-      className="app"
-      style={glowColor ? { '--glow-color': glowColor } : undefined}
-    >
-      {hasGenre && <div className="app__ambient" />}
+    <div className="app">
+      <div className="app__noise" />
 
       {loading ? (
         <p className="app__loading">loading genres...</p>
@@ -44,13 +40,22 @@ function App() {
           </nav>
 
           <main className="app__main">
-            <GenreCard key={selectedGenre.slug} genre={selectedGenre} />
-            <NearbyGenres
-              key={`nearby-${selectedGenre.slug}`}
-              genre={selectedGenre}
-              allGenres={genres}
-              onSelect={handleResult}
-            />
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={selectedGenre.slug}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+              >
+                <GenreCard genre={selectedGenre} />
+                <NearbyGenres
+                  genre={selectedGenre}
+                  allGenres={genres}
+                  onSelect={handleResult}
+                />
+              </motion.div>
+            </AnimatePresence>
           </main>
         </>
       ) : (

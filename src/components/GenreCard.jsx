@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import { useLastfm } from '../hooks/useLastfm'
 import { ensureContrast } from '../utils/color'
 import './GenreCard.css'
@@ -31,13 +32,27 @@ export function GenreCard({ genre }) {
   return (
     <div className="genre-card" style={{ '--genre-color': displayColor }}>
       <div className="genre-card__header">
-        <h2 className="genre-card__name">{genre.name}</h2>
+        <div className="genre-card__name-wrapper">
+          <motion.h2
+            className="genre-card__name"
+            initial={{ clipPath: 'inset(0 100% 0 0)' }}
+            animate={{ clipPath: 'inset(0 0% 0 0)' }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+          >
+            {genre.name}
+          </motion.h2>
+        </div>
         <p className="genre-card__meta">
           {genre.x},{genre.y} {genre.color}
         </p>
       </div>
 
-      <div className="genre-card__color-swatch" />
+      <motion.div
+        className="genre-card__color-swatch"
+        initial={{ width: 0 }}
+        animate={{ width: '100%' }}
+        transition={{ type: 'spring', stiffness: 80, damping: 20 }}
+      />
 
       {lastfm?.summary && (
         <p className="genre-card__desc">{lastfm.summary}</p>

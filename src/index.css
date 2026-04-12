@@ -8,18 +8,14 @@
 
 :root {
   --bg-primary: #0d0f12;
-  --bg-surface: #14171c;
-  --text-primary: #e2e4e9;
-  --text-secondary: #7a7f8a;
+  --bg-surface: #13161a;
+  --text-primary: #D5F9DE;
+  --text-secondary: #8AA399;
   --font-mono: 'IBM Plex Mono', monospace;
   --font-display: 'Barlow Condensed', sans-serif;
-
-  /* UI accent palette */
-  --teal: #8AA399;
-  --lavender: #7D84B2;
-  --wisteria: #8FA6CB;
-  --lime: #DBF4A7;
-  --mint-data: #D5F9DE;
+  --font-body: 'Barlow', sans-serif;
+  --accent: #8FA6CB;
+  --accent-hover: #DBF4A7;
 }
 
 html, body, #root {

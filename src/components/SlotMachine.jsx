@@ -1,4 +1,5 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import './SlotMachine.css'
 
 const SPIN_DURATION = 1400
@@ -46,15 +47,28 @@ export function SlotMachine({ genres, onResult, compact }) {
     requestAnimationFrame(tick)
   }, [spinning, genres, pickRandom, onResult])
 
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.code !== 'Space') return
+      const tag = document.activeElement?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return
+      e.preventDefault()
+      spin()
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [spin])
+
   if (compact) {
     return (
-      <button
+      <motion.button
         className="slot-machine__button"
         onClick={spin}
         disabled={spinning}
+        whileTap={{ scale: 0.95 }}
       >
         {spinning && display ? display.name : 'random'}
-      </button>
+      </motion.button>
     )
   }
 
@@ -69,13 +83,14 @@ export function SlotMachine({ genres, onResult, compact }) {
         </span>
       </div>
 
-      <button
+      <motion.button
         className="slot-machine__button"
         onClick={spin}
         disabled={spinning}
+        whileTap={{ scale: 0.95 }}
       >
         {spinning ? '...' : 'random'}
-      </button>
+      </motion.button>
     </div>
   )
 }

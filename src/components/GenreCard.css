@@ -1,18 +1,6 @@
 .genre-card {
   width: 100%;
-  padding: 0 0 2rem;
-  animation: card-fade-in 0.3s ease-out;
-}
-
-@keyframes card-fade-in {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  padding: 0;
 }
 
 .genre-card__header {
@@ -22,10 +10,16 @@
   gap: 1.5rem;
 }
 
+.genre-card__name-wrapper {
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+}
+
 .genre-card__name {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(3rem, 8vw, 5.5rem);
+  font-size: clamp(3rem, 9vw, 5rem);
   line-height: 0.9;
   letter-spacing: -0.03em;
   color: var(--text-primary);
@@ -35,9 +29,8 @@
 
 .genre-card__meta {
   font-family: var(--font-mono);
-  font-size: 0.55rem;
-  color: var(--mint-data);
-  letter-spacing: 0.06em;
+  font-size: 11px;
+  color: var(--text-secondary);
   opacity: 0.4;
   margin: 0.4rem 0 0;
   white-space: nowrap;
@@ -45,36 +38,21 @@
   text-align: right;
 }
 
-/* Color swatch: generous block with glow */
 .genre-card__color-swatch {
-  height: 8px;
+  height: 3px;
   background-color: var(--genre-color);
-  margin: 1.5rem 0 1.5rem;
-  border-radius: 2px;
-  box-shadow: 0 0 20px color-mix(in srgb, var(--genre-color) 30%, transparent);
-  animation: swatch-expand 0.4s ease-out;
+  margin: 2rem 0;
 }
 
-@keyframes swatch-expand {
-  from { width: 0; }
-  to { width: 100%; }
-}
-
-/* Description: readable, fades in with delay */
 .genre-card__desc {
-  font-family: var(--font-display);
-  font-weight: 400;
+  font-family: var(--font-body);
+  font-weight: 300;
   font-size: 0.9rem;
-  line-height: 1.6;
-  color: #b8bcc5;
-  margin: 0 0 1.5rem;
+  line-height: 1.7;
+  color: var(--text-primary);
+  opacity: 0.75;
+  margin: 0 0 2.5rem;
   max-width: 600px;
-  animation: desc-fade-in 0.3s ease-out 0.2s both;
-}
-
-@keyframes desc-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }
 
 .genre-card__links {
@@ -84,33 +62,34 @@
 .genre-card__links a {
   font-family: var(--font-mono);
   font-size: 0.7rem;
-  color: var(--wisteria);
+  color: var(--accent);
   text-decoration: none;
   letter-spacing: 0.02em;
   transition: color 0.2s;
 }
 
 .genre-card__links a:hover {
-  color: var(--lime);
+  color: var(--accent-hover);
 }
 
 .genre-card__sep {
   margin: 0 0.6rem;
-  color: #2a2d35;
+  color: #1e2128;
 }
 
-/* Track: clickable link */
 .genre-card__track {
   display: inline-block;
   font-family: var(--font-mono);
   font-size: 0.65rem;
   color: var(--text-secondary);
+  opacity: 0.6;
   text-decoration: none;
-  margin-top: 1rem;
+  margin-top: 1.25rem;
   letter-spacing: 0.02em;
   transition: color 0.2s;
 }
 
 .genre-card__track:hover {
-  color: var(--genre-color);
+  color: var(--accent-hover);
+  opacity: 1;
 }
