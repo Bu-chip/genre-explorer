@@ -38,16 +38,16 @@
 
 .slot-machine__button {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--teal);
   background: transparent;
   border: 1px solid var(--teal);
-  padding: 0.4rem 1.2rem;
+  padding: 0.5rem 1.6rem;
   cursor: pointer;
-  transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+  transition: border-color 0.2s, background-color 0.2s, color 0.2s, box-shadow 0.2s;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -55,6 +55,7 @@
 .slot-machine__button:hover:not(:disabled) {
   background-color: var(--teal);
   color: var(--bg-primary);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--teal) 35%, transparent);
 }
 
 .slot-machine__button:disabled {

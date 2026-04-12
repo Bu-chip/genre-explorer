@@ -3,6 +3,21 @@
   flex-direction: column;
   min-height: 100vh;
   padding: 0 1.5rem;
+  position: relative;
+}
+
+/* Ambient radial glow behind the genre card */
+.app__ambient {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    ellipse 60% 50% at 30% 40%,
+    color-mix(in srgb, var(--glow-color) 5%, transparent),
+    transparent 70%
+  );
+  transition: background 0.8s ease;
 }
 
 /* Hero: centered title shown before first genre selection */
@@ -13,6 +28,8 @@
   justify-content: center;
   padding: 20vh 0 2rem;
   text-align: center;
+  position: relative;
+  z-index: 1;
 }
 
 .app__title {
@@ -39,6 +56,8 @@
   align-items: center;
   gap: 1.5rem;
   padding: 1rem 0;
+  position: relative;
+  z-index: 1;
 }
 
 /* Nav bar: compact top bar after genre is selected */
@@ -61,6 +80,8 @@
   width: 100%;
   max-width: 760px;
   padding: 2rem 0 4rem;
+  position: relative;
+  z-index: 1;
 }
 
 .app__loading,

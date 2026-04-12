@@ -43,17 +43,21 @@
   align-items: center;
   gap: 0.5rem;
   width: 100%;
-  padding: 0.2rem 0;
-  background: none;
+  padding: 0.3rem 0.4rem;
+  margin: 0 -0.4rem;
+  width: calc(100% + 0.8rem);
+  background: transparent;
   border: none;
+  border-radius: 3px;
   cursor: pointer;
   text-align: left;
-  transition: transform 0.15s;
+  transition: transform 0.15s, background-color 0.2s;
 }
 
 .related__row:hover {
   transform: scale(1.02);
   transform-origin: left center;
+  background-color: color-mix(in srgb, var(--row-color) 10%, transparent);
 }
 
 .related__row:hover .related__name {

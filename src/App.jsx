@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useGenres } from './hooks/useGenres'
+import { ensureContrast } from './utils/color'
 import { SlotMachine } from './components/SlotMachine'
 import { SearchBox } from './components/SearchBox'
 import { GenreCard } from './components/GenreCard'
@@ -24,9 +25,15 @@ function App() {
   }
 
   const hasGenre = !!selectedGenre
+  const glowColor = hasGenre ? ensureContrast(selectedGenre.color) : null
 
   return (
-    <div className="app">
+    <div
+      className="app"
+      style={glowColor ? { '--glow-color': glowColor } : undefined}
+    >
+      {hasGenre && <div className="app__ambient" />}
+
       {loading ? (
         <p className="app__loading">loading genres...</p>
       ) : hasGenre ? (

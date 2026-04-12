@@ -24,6 +24,10 @@ export function GenreCard({ genre }) {
 
   const displayColor = ensureContrast(genre.color)
 
+  const trackUrl = lastfm?.topTrack
+    ? `https://www.youtube.com/results?search_query=${encodeURIComponent(lastfm.topTrack.artist + ' ' + lastfm.topTrack.title)}`
+    : null
+
   return (
     <div className="genre-card" style={{ '--genre-color': displayColor }}>
       <div className="genre-card__header">
@@ -51,9 +55,14 @@ export function GenreCard({ genre }) {
       </nav>
 
       {lastfm?.topTrack && (
-        <p className="genre-card__track">
+        <a
+          className="genre-card__track"
+          href={trackUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           {'\u25b6'} {lastfm.topTrack.artist} — {lastfm.topTrack.title}
-        </p>
+        </a>
       )}
     </div>
   )
