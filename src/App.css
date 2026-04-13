@@ -62,11 +62,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.85rem 1rem;
-  background: var(--bg-surface);
+  padding: 0.5rem 0;
   position: sticky;
   top: 0;
   z-index: 20;
+  background: var(--bg-primary);
 }
 
 .app__main {

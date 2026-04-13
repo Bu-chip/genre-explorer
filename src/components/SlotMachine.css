@@ -39,23 +39,22 @@
 
 .slot-machine__button {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   font-weight: 500;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.25em;
   text-transform: uppercase;
-  color: var(--accent);
-  background: transparent;
-  border: 1px solid var(--accent);
-  padding: 0.5rem 1.6rem;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  padding: 0.3rem 0;
   cursor: pointer;
-  transition: color 0.2s, background-color 0.2s;
+  transition: color 0.2s;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .slot-machine__button:hover:not(:disabled) {
-  background-color: var(--accent);
-  color: var(--bg-primary);
+  color: var(--accent-hover);
 }
 
 .slot-machine__button:disabled {
