@@ -18,6 +18,11 @@ export function SlotMachine({ genres, onResult, compact }) {
   const spin = useCallback(() => {
     if (spinning || !genres?.length) return
 
+    if (compact) {
+      onResult(pickRandom())
+      return
+    }
+
     setSpinning(true)
     const startTime = performance.now()
     const finalGenre = pickRandom()
@@ -45,7 +50,7 @@ export function SlotMachine({ genres, onResult, compact }) {
     }
 
     requestAnimationFrame(tick)
-  }, [spinning, genres, pickRandom, onResult])
+  }, [spinning, genres, pickRandom, onResult, compact])
 
   useEffect(() => {
     const handleKey = (e) => {

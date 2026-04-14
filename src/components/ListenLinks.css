@@ -1,0 +1,26 @@
+.listen-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+  margin-top: var(--space-5);
+}
+
+.listen-links__icon {
+  color: var(--gray-500);
+  cursor: pointer;
+  transition: color 150ms ease;
+  display: flex;
+}
+
+.listen-links__icon--youtube:hover {
+  color: var(--color-youtube);
+}
+
+.listen-links__icon--spotify:hover {
+  color: var(--color-spotify);
+}
+
+.listen-links__icon--bandcamp:hover {
+  color: var(--color-bandcamp);
+}

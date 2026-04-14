@@ -7,13 +7,10 @@
 }
 
 :root {
-  --bg-primary: #0d0f12;
+  --bg-primary: var(--gray-900);
   --bg-surface: #13161a;
   --text-primary: #D5F9DE;
   --text-secondary: #8AA399;
-  --font-mono: 'IBM Plex Mono', monospace;
-  --font-display: 'Barlow Condensed', sans-serif;
-  --font-body: 'Barlow', sans-serif;
   --accent: #8FA6CB;
   --accent-hover: #DBF4A7;
 }
@@ -24,9 +21,9 @@ html, body, #root {
 }
 
 body {
-  font-family: var(--font-mono);
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  font-family: var(--font-body);
+  background-color: var(--gray-900);
+  color: var(--gray-100);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

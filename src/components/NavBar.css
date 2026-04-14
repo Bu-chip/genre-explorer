@@ -1,0 +1,192 @@
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: var(--space-7);
+}
+
+/* Shared action style — caption feel */
+
+.nav-bar__action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gray-500);
+  padding: var(--space-2) var(--space-3);
+  transition: color 0.15s;
+  white-space: nowrap;
+}
+
+.nav-bar__action:hover:not(:disabled) {
+  color: var(--gray-300);
+}
+
+.nav-bar__action:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+/* Sections */
+
+.nav-bar__section {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Chevron — tiny, attached to RANDOM */
+
+.nav-bar__chevron {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--gray-500);
+  transition: color 0.15s;
+  margin-left: -6px;
+  padding: var(--space-1);
+  line-height: 0;
+}
+
+.nav-bar__chevron:hover {
+  color: var(--gray-300);
+}
+
+/* Vertical separator */
+
+.nav-bar__separator {
+  width: 1px;
+  height: 14px;
+  background: var(--gray-700);
+  flex-shrink: 0;
+}
+
+/* Dropdown — centered below the random section */
+
+.nav-bar__dropdown {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  left: 50%;
+  transform: translateX(-50%) scale(0.95);
+  background: var(--gray-800);
+  border: 1px solid var(--gray-700);
+  padding: var(--space-1) 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  min-width: 140px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.nav-bar__dropdown--open {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+  pointer-events: auto;
+}
+
+.nav-bar__dropdown-option {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--gray-300);
+  background: none;
+  border: none;
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.1s;
+  white-space: nowrap;
+}
+
+.nav-bar__dropdown-option:hover {
+  background: var(--gray-700);
+  color: var(--gray-100);
+}
+
+/* Search — inline input that replaces the label */
+
+.nav-bar__search-field {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  color: var(--gray-500);
+}
+
+.nav-bar__search-input {
+  width: 200px;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--gray-700);
+  padding: 0 0 2px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.nav-bar__search-input::placeholder {
+  color: var(--gray-500);
+  opacity: 0.5;
+}
+
+.nav-bar__search-input:focus {
+  border-bottom-color: var(--gray-500);
+}
+
+/* Autocomplete results */
+
+.nav-bar__results {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  left: 0;
+  right: 0;
+  min-width: 220px;
+  list-style: none;
+  background: var(--gray-800);
+  border: 1px solid var(--gray-700);
+  padding: var(--space-1) 0;
+  z-index: 50;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.nav-bar__result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  transition: background-color 0.1s;
+}
+
+.nav-bar__result--active {
+  background: var(--gray-700);
+}
+
+.nav-bar__result-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--gray-300);
+  letter-spacing: 0.01em;
+}
+
+.nav-bar__result--active .nav-bar__result-name {
+  color: var(--gray-100);
+}
+
+.nav-bar__result-dot {
+  width: 5px;
+  height: 5px;
+  flex-shrink: 0;
+}

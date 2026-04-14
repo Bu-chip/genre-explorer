@@ -1,0 +1,85 @@
+.dice-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.dice-button__trigger {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--gray-500);
+  transition: color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1);
+}
+
+.dice-button__trigger:hover:not(:disabled) {
+  color: var(--gray-300);
+}
+
+.dice-button__trigger:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+.dice-button__chevron {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--gray-500);
+  transition: color 0.15s;
+  padding: 0 var(--space-1);
+  margin-left: -2px;
+  line-height: 0;
+}
+
+.dice-button__chevron:hover {
+  color: var(--gray-300);
+}
+
+/* Dropdown — centered below dice */
+
+.dice-button__dropdown {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  left: 50%;
+  transform: translateX(-50%) scale(0.95);
+  background: var(--gray-800);
+  border: 1px solid var(--gray-700);
+  padding: var(--space-1) 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  min-width: 140px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.dice-button__dropdown--open {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+  pointer-events: auto;
+}
+
+.dice-button__option {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--gray-300);
+  background: none;
+  border: none;
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.1s;
+  white-space: nowrap;
+}
+
+.dice-button__option:hover {
+  background: var(--gray-700);
+  color: var(--gray-100);
+}

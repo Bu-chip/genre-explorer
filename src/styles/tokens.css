@@ -1,0 +1,55 @@
+/* ===== Design Tokens ===== */
+
+:root {
+  /* Grey scale (cool-blue tint) */
+  --gray-900: #0d0f12;
+  --gray-800: #161a1f;
+  --gray-700: #252b33;
+  --gray-600: #3a424d;
+  --gray-500: #5a6370;
+  --gray-400: #7d8694;
+  --gray-300: #a0a8b4;
+  --gray-200: #c4cad2;
+  --gray-100: #e8eaed;
+  --gray-50:  #f4f5f6;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+
+  /* Typography — families */
+  --font-display: 'Barlow Condensed', sans-serif;
+  --font-body: 'Barlow', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  /* Typography — weights */
+  --font-weight-thin: 200;
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+
+  /* Typography — sizes */
+  --text-hero: clamp(2.5rem, 7vw, 5rem);
+  --text-lg: 1.25rem;
+  --text-base: 1rem;
+  --text-sm: 0.875rem;
+  --text-xs: 0.75rem;
+
+  /* Accent palette */
+  --accent-teal: #8AA399;
+  --accent-lavender: #7D84B2;
+  --accent-blue: #8FA6CB;
+  --accent-lime: #DBF4A7;
+  --accent-mint: #D5F9DE;
+
+  /* Brand — listen links */
+  --color-youtube: #FF0000;
+  --color-spotify: #1DB954;
+  --color-bandcamp: #1DA0C3;
+}

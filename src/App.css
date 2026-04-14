@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  padding: 0 1.5rem;
+  padding: 0 var(--space-5);
   position: relative;
 }
 
@@ -18,12 +18,14 @@
   background-size: 256px 256px;
 }
 
+/* ===== No-genre state (hero + controls) ===== */
+
 .app__hero {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20vh 0 2rem;
+  padding: 20vh 0 var(--space-6);
   text-align: center;
   position: relative;
   z-index: 1;
@@ -39,11 +41,11 @@
 
 .app__subtitle {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: var(--text-xs);
   color: var(--text-secondary);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  margin-top: 0.4rem;
+  margin-top: var(--space-1);
   opacity: 0.6;
 }
 
@@ -51,40 +53,70 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
-  padding: 1rem 0;
+  gap: var(--space-5);
+  padding: var(--space-4) 0;
   position: relative;
   z-index: 1;
 }
 
-.app__nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.5rem 0;
-  position: sticky;
+/* ===== Sticky header ===== */
+
+.sticky-header {
+  position: fixed;
   top: 0;
-  z-index: 20;
+  left: 0;
+  right: 0;
+  z-index: 30;
   background: var(--bg-primary);
+  padding: var(--space-3) var(--space-5);
+  transition: opacity 150ms ease;
 }
 
-.app__main {
+.sticky-header .nav-bar {
+  margin-bottom: 0;
+}
+
+/* ===== Zone 1: Discovery ===== */
+
+.zone-discovery {
   display: flex;
   flex-direction: column;
   width: 100%;
   max-width: 760px;
-  padding: 3rem 0 4rem;
+  margin: 0 auto;
+  padding: var(--space-9) 0;
   position: relative;
   z-index: 1;
 }
 
+.discovery-content {
+  width: 100%;
+  text-align: center;
+}
+
+/* ===== Zone 2: Exploration ===== */
+
+.zone-exploration {
+  width: 100%;
+  max-width: 760px;
+  margin: var(--space-9) auto 0;
+  padding-bottom: var(--space-9);
+  position: relative;
+  z-index: 1;
+}
+
+.exploration-content {
+  width: 100%;
+}
+
+/* ===== Shared ===== */
+
 .app__loading,
 .app__error {
   font-family: var(--font-mono);
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   color: var(--text-secondary);
-  padding: 3rem 0;
+  padding: var(--space-7) 0;
   text-align: center;
 }
 
