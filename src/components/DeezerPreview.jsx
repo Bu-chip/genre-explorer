@@ -133,7 +133,9 @@ export function DeezerPreview({ artist, track }) {
   if (!data) return null
 
   return (
-    <div className="deezer-preview">
+    <div className="deezer-preview-wrapper">
+      <p className="deezer-preview__label">a taste of the genre</p>
+      <div className="deezer-preview">
       {data.cover && (
         <img
           className="deezer-preview__cover"
@@ -163,6 +165,7 @@ export function DeezerPreview({ artist, track }) {
           </div>
         </div>
       </div>
+    </div>
     </div>
   )
 }

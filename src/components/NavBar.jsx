@@ -288,6 +288,7 @@ export function NavBar({ genres, onRandom, onSelect, disabled, currentGenre }) {
           </ul>
         )}
       </div>
+
     </nav>
   )
 }

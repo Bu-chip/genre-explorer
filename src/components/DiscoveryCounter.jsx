@@ -32,7 +32,7 @@ export function DiscoveryCounter({ genre, total }) {
 
   return (
     <p className="discovery-counter">
-      {count.toLocaleString()} / {total.toLocaleString()} explored
+      {count.toLocaleString()} / {total.toLocaleString()} genres discovered
     </p>
   )
 }

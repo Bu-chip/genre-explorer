@@ -25,50 +25,35 @@
   margin: 0 0 var(--space-3);
 }
 
-.related__list {
-  list-style: none;
+.related__chips {
   display: flex;
-  flex-direction: column;
-}
-
-.related__row {
-  display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   gap: var(--space-2);
-  width: 100%;
-  padding: var(--space-1) 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-  text-align: left;
 }
 
-.related__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
+.related__chip {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  background: transparent;
+  border: 1px solid var(--gray-700);
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.related__chip:hover {
+  border-color: var(--chip-color);
+  background: color-mix(in srgb, var(--chip-color) 10%, transparent);
 }
 
 .related__name {
   font-family: var(--font-body);
   font-size: var(--text-sm);
-  color: var(--gray-300);
-  flex: 1;
+  color: color-mix(in srgb, var(--chip-color) 60%, var(--gray-500));
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: color 0.2s;
+  transition: color 150ms ease;
 }
 
-.related__row:hover .related__name {
-  color: var(--gray-100);
-}
-
-.related__pct {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--gray-500);
-  letter-spacing: 0.04em;
-  flex-shrink: 0;
+.related__chip:hover .related__name {
+  color: var(--chip-color);
 }

@@ -156,7 +156,7 @@
   border-bottom: 1px solid var(--gray-700);
   padding: 0 0 2px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 150ms ease;
 }
 
 .nav-bar__search-input::placeholder {

@@ -35,7 +35,7 @@
   --font-weight-regular: 400;
 
   /* Typography — sizes */
-  --text-hero: clamp(2.5rem, 7vw, 5rem);
+  --text-hero: clamp(3rem, 10vw, 7rem);
   --text-lg: 1.25rem;
   --text-base: 1rem;
   --text-sm: 0.875rem;
@@ -47,6 +47,9 @@
   --accent-blue: #8FA6CB;
   --accent-lime: #DBF4A7;
   --accent-mint: #D5F9DE;
+
+  /* Semantic */
+  --color-error: #c45c5c;
 
   /* Brand — listen links */
   --color-youtube: #FF0000;

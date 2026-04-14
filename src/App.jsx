@@ -4,13 +4,10 @@ import { useGenres } from './hooks/useGenres'
 import { useLastfm } from './hooks/useLastfm'
 import { getRarityScore } from './utils/rarityScore'
 import { getPhrase } from './utils/phrases'
-import { SlotMachine } from './components/SlotMachine'
 import { NavBar } from './components/NavBar'
-import { SearchBox } from './components/SearchBox'
-import { GenreName, GenreLinks, GenreDescription } from './components/GenreCard'
+import { GenreName, GenreDescription } from './components/GenreCard'
 import { ListenLinks } from './components/ListenLinks'
 import { DeezerPreview } from './components/DeezerPreview'
-import { RelativePosition } from './components/RelativePosition'
 import { NearbyGenres } from './components/NearbyGenres'
 import { ShareButton } from './components/ShareButton'
 import { DiscoveryCounter } from './components/DiscoveryCounter'
@@ -24,6 +21,7 @@ function App() {
   const [selectedGenre, setSelectedGenre] = useState(null)
   const [spinDisplay, setSpinDisplay] = useState(null)
   const [headerVisible, setHeaderVisible] = useState(false)
+  const [scrollHintVisible, setScrollHintVisible] = useState(true)
   const nameRef = useRef(null)
   const cyclingRef = useRef(false)
   const cyclingTimerRef = useRef(null)
@@ -116,6 +114,19 @@ function App() {
   }, [])
 
   useEffect(() => {
+    if (!selectedGenre) return
+    setScrollHintVisible(true)
+    const onScroll = () => {
+      if (window.scrollY > 50) {
+        setScrollHintVisible(false)
+        window.removeEventListener('scroll', onScroll)
+      }
+    }
+    window.addEventListener('scroll', onScroll)
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [selectedGenre])
+
+  useEffect(() => {
     const el = nameRef.current
     if (!el) return
 
@@ -142,6 +153,7 @@ function App() {
   return (
     <div className="app">
       <div className="app__noise" />
+      <span className="app__watermark">Random Genre Explorer</span>
 
       {loading ? (
         <p className="app__loading">loading genres...</p>
@@ -164,22 +176,20 @@ function App() {
 
             <div className="discovery-content">
               <GenreName genre={selectedGenre} displayName={spinDisplay} contextPhrase={contextPhrase} />
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={selectedGenre.slug}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <GenreLinks genre={selectedGenre} lastfm={lastfm} />
-                </motion.div>
-              </AnimatePresence>
               <ListenLinks name={selectedGenre.name} slug={selectedGenre.slug} />
+              <ShareButton genre={selectedGenre} />
             </div>
+
+            {scrollHintVisible && (
+              <div className="scroll-hint" aria-hidden="true">
+                <svg width="16" height="10" viewBox="0 0 16 10" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M1 1l7 7 7-7" />
+                </svg>
+              </div>
+            )}
           </section>
 
-          <section className="zone-exploration">
+          <section className="zone-exploration" style={{ '--genre-tint': selectedGenre.color }}>
             <AnimatePresence mode="wait">
               <motion.div
                 className="exploration-content"
@@ -189,7 +199,6 @@ function App() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                <RelativePosition genre={selectedGenre} allGenres={genres} />
                 <div className="exploration-grid">
                   <div className="exploration-grid__main">
                     <GenreDescription lastfm={lastfm} />
@@ -206,28 +215,18 @@ function App() {
                     />
                   </div>
                 </div>
-                <div className="exploration-footer">
-                  <ShareButton genre={selectedGenre} />
-                  <DiscoveryCounter genre={selectedGenre} total={genres.length} />
-                </div>
+                <DiscoveryCounter genre={selectedGenre} total={genres.length} />
               </motion.div>
             </AnimatePresence>
           </section>
         </>
       ) : (
-        <>
-          <header className="app__hero">
-            <h1 className="app__title">Random Genre Explorer</h1>
-            <p className="app__subtitle">
-              {genres.length.toLocaleString()} genres
-            </p>
-          </header>
-
-          <div className="app__controls">
-            <SlotMachine genres={genres} onResult={handleResult} />
-            <SearchBox genres={genres} onSelect={handleResult} />
-          </div>
-        </>
+        <div className="app__landing">
+          <NavBar genres={genres} onRandom={handleRandom} onSelect={handleResult} disabled={false} currentGenre={null} />
+          <p className="app__landing-sub">
+            {genres.length.toLocaleString()} genres to explore
+          </p>
+        </div>
       )}
     </div>
   )

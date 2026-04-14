@@ -52,7 +52,7 @@
   border-bottom: 1px solid var(--gray-700);
   padding: var(--space-2) 0;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 150ms ease;
 }
 
 .search-box__input::placeholder {

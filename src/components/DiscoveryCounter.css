@@ -3,5 +3,5 @@
   font-size: var(--text-xs);
   color: var(--gray-600);
   text-align: center;
-  margin: 0;
+  margin: var(--space-8) 0 0;
 }
