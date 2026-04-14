@@ -1,0 +1,66 @@
+.deezer-preview {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  margin: 0 0 var(--space-6);
+}
+
+.deezer-preview__cover {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.deezer-preview__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.deezer-preview__track {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--gray-300);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0 0 var(--space-3);
+}
+
+.deezer-preview__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.deezer-preview__play {
+  background: none;
+  border: none;
+  color: var(--gray-400);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+
+.deezer-preview__play:hover {
+  color: var(--gray-200);
+}
+
+.deezer-preview__bar {
+  flex: 1;
+  height: 3px;
+  background: var(--gray-700);
+  cursor: pointer;
+  position: relative;
+}
+
+.deezer-preview__fill {
+  height: 100%;
+  background: var(--gray-400);
+  position: absolute;
+  top: 0;
+  left: 0;
+}

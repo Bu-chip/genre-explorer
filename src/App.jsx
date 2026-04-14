@@ -7,6 +7,7 @@ import { NavBar } from './components/NavBar'
 import { SearchBox } from './components/SearchBox'
 import { GenreName, GenreLinks, GenreDescription } from './components/GenreCard'
 import { ListenLinks } from './components/ListenLinks'
+import { DeezerPreview } from './components/DeezerPreview'
 import { RelativePosition } from './components/RelativePosition'
 import { NearbyGenres } from './components/NearbyGenres'
 import { ShareButton } from './components/ShareButton'
@@ -172,6 +173,10 @@ function App() {
                 <div className="exploration-grid">
                   <div className="exploration-grid__main">
                     <GenreDescription lastfm={lastfm} />
+                    <DeezerPreview
+                      artist={lastfm?.topTrack?.artist}
+                      track={lastfm?.topTrack?.title}
+                    />
                   </div>
                   <div className="exploration-grid__side">
                     <RelativePosition genre={selectedGenre} allGenres={genres} />
