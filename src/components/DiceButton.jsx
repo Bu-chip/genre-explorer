@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { getGenresByRegion, REGION_NAMES } from '../utils/regions'
+import { getRarityScore } from '../utils/rarityScore'
 import './DiceButton.css'
 
 const DROPDOWN_OPTIONS = [
@@ -30,23 +32,77 @@ function DiceIcon({ size = 20 }) {
   )
 }
 
-export function DiceButton({ onRandom, disabled }) {
+export function DiceButton({ onRandom, onSelect, disabled, genres, currentGenre }) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [regionOpen, setRegionOpen] = useState(false)
   const containerRef = useRef(null)
+  const rareGenresCache = useRef(null)
 
   const handleOptionClick = useCallback(
     (optionId) => {
+      if (optionId === 'region') {
+        setRegionOpen((o) => !o)
+        return
+      }
+
       setDropdownOpen(false)
-      // All options currently route to the same random function
-      onRandom()
+      setRegionOpen(false)
+
+      if (optionId === 'random') {
+        onRandom()
+      } else if (optionId === 'rare') {
+        if (!genres?.length) { onRandom(); return }
+        if (!rareGenresCache.current) {
+          rareGenresCache.current = genres.filter(
+            (g) => getRarityScore(g, genres, null) > 60,
+          )
+        }
+        const pool = rareGenresCache.current
+        if (pool.length > 0 && onSelect) {
+          onSelect(pool[Math.floor(Math.random() * pool.length)])
+        } else {
+          onRandom()
+        }
+      } else if (optionId === 'nearby') {
+        if (currentGenre && genres?.length && onSelect) {
+          const scored = []
+          for (const g of genres) {
+            if (g.slug === currentGenre.slug) continue
+            const dx = g.x - currentGenre.x
+            const dy = g.y - currentGenre.y
+            scored.push({ genre: g, dist: dx * dx + dy * dy })
+          }
+          scored.sort((a, b) => a.dist - b.dist)
+          const nearby = scored.slice(0, 20)
+          onSelect(nearby[Math.floor(Math.random() * nearby.length)].genre)
+        } else {
+          onRandom()
+        }
+      }
     },
-    [onRandom],
+    [genres, onRandom, onSelect, currentGenre],
+  )
+
+  const handleRegionSelect = useCallback(
+    (region) => {
+      setDropdownOpen(false)
+      setRegionOpen(false)
+      if (!genres?.length) { onRandom(); return }
+      const pool = getGenresByRegion(genres, region)
+      if (pool.length > 0 && onSelect) {
+        onSelect(pool[Math.floor(Math.random() * pool.length)])
+      } else {
+        onRandom()
+      }
+    },
+    [genres, onSelect, onRandom],
   )
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
         setDropdownOpen(false)
+        setRegionOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -83,13 +139,25 @@ export function DiceButton({ onRandom, disabled }) {
         className={`dice-button__dropdown ${dropdownOpen ? 'dice-button__dropdown--open' : ''}`}
       >
         {DROPDOWN_OPTIONS.map((opt) => (
-          <button
-            key={opt.id}
-            className="dice-button__option"
-            onClick={() => handleOptionClick(opt.id)}
-          >
-            {opt.label}
-          </button>
+          <div key={opt.id}>
+            <button
+              className="dice-button__option"
+              onClick={() => handleOptionClick(opt.id)}
+            >
+              {opt.label}
+            </button>
+            {opt.id === 'region' && regionOpen &&
+              REGION_NAMES.map((region) => (
+                <button
+                  key={region}
+                  className="dice-button__option"
+                  style={{ paddingLeft: 'var(--space-6)', color: 'var(--gray-400)', fontSize: '0.6875rem' }}
+                  onClick={() => handleRegionSelect(region)}
+                >
+                  {region}
+                </button>
+              ))}
+          </div>
         ))}
       </div>
     </div>

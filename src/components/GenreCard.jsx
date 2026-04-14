@@ -2,14 +2,16 @@ import { motion } from 'framer-motion'
 import { ensureContrast } from '../utils/color'
 import './GenreCard.css'
 
-export function GenreName({ genre, displayName }) {
+export function GenreName({ genre, displayName, contextPhrase }) {
   if (!genre) return null
 
   const displayColor = ensureContrast(genre.color)
 
   return (
     <div className="genre-card" style={{ '--genre-color': displayColor }}>
-      <p className="genre-card__context">spinning...</p>
+      <p className="genre-card__context">
+        {displayName ? 'spinning...' : (contextPhrase || 'spinning...')}
+      </p>
 
       <div className="genre-card__name-wrapper">
         {displayName ? (

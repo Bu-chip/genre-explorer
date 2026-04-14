@@ -51,14 +51,15 @@ export function useLastfm(genreName) {
       if (cancelled) return
 
       const summary = truncateToSentences(infoRes?.tag?.wiki?.summary)
+      const reach = infoRes?.tag?.reach != null ? Number(infoRes.tag.reach) : null
 
       const track = tracksRes?.tracks?.track?.[0]
       const topTrack = track
         ? { artist: track.artist?.name, title: track.name }
         : null
 
-      if (summary || topTrack) {
-        setData({ summary, topTrack })
+      if (summary || topTrack || reach != null) {
+        setData({ summary, topTrack, listeners: reach })
       } else {
         setData(null)
       }

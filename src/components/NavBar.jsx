@@ -1,4 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
+import { getGenresByRegion, REGION_NAMES } from '../utils/regions'
+import { getRarityScore } from '../utils/rarityScore'
 import './NavBar.css'
 
 const MAX_RESULTS = 8
@@ -50,8 +52,9 @@ function SearchIcon() {
   )
 }
 
-export function NavBar({ genres, onRandom, onSelect, disabled }) {
+export function NavBar({ genres, onRandom, onSelect, disabled, currentGenre }) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [regionOpen, setRegionOpen] = useState(false)
   const [searchActive, setSearchActive] = useState(false)
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
@@ -94,12 +97,64 @@ export function NavBar({ genres, onRandom, onSelect, disabled }) {
     [onSelect, collapseSearch],
   )
 
+  const rareGenresCache = useRef(null)
+
   const handleOptionClick = useCallback(
     (optionId) => {
+      if (optionId === 'region') {
+        setRegionOpen((o) => !o)
+        return
+      }
+
       setDropdownOpen(false)
-      onRandom()
+      setRegionOpen(false)
+
+      if (optionId === 'random') {
+        onRandom()
+      } else if (optionId === 'rare') {
+        if (!rareGenresCache.current) {
+          rareGenresCache.current = genres.filter(
+            (g) => getRarityScore(g, genres, null) > 60,
+          )
+        }
+        const pool = rareGenresCache.current
+        if (pool.length > 0) {
+          onSelect(pool[Math.floor(Math.random() * pool.length)])
+        } else {
+          onRandom()
+        }
+      } else if (optionId === 'nearby') {
+        if (currentGenre) {
+          const scored = []
+          for (const g of genres) {
+            if (g.slug === currentGenre.slug) continue
+            const dx = g.x - currentGenre.x
+            const dy = g.y - currentGenre.y
+            scored.push({ genre: g, dist: dx * dx + dy * dy })
+          }
+          scored.sort((a, b) => a.dist - b.dist)
+          const nearby = scored.slice(0, 20)
+          onSelect(nearby[Math.floor(Math.random() * nearby.length)].genre)
+        } else {
+          onRandom()
+        }
+      }
     },
-    [onRandom],
+    [genres, onRandom, onSelect, currentGenre],
+  )
+
+  const handleRegionSelect = useCallback(
+    (region) => {
+      setDropdownOpen(false)
+      setRegionOpen(false)
+      const pool = getGenresByRegion(genres, region)
+      if (pool.length > 0) {
+        onSelect(pool[Math.floor(Math.random() * pool.length)])
+      } else {
+        onRandom()
+      }
+    },
+    [genres, onSelect, onRandom],
   )
 
   // Outside click: close dropdown and search
@@ -107,6 +162,7 @@ export function NavBar({ genres, onRandom, onSelect, disabled }) {
     const handler = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false)
+        setRegionOpen(false)
       }
       if (searchRef.current && !searchRef.current.contains(e.target)) {
         collapseSearch()
@@ -161,13 +217,30 @@ export function NavBar({ genres, onRandom, onSelect, disabled }) {
 
         <div className={`nav-bar__dropdown ${dropdownOpen ? 'nav-bar__dropdown--open' : ''}`}>
           {DROPDOWN_OPTIONS.map((opt) => (
-            <button
-              key={opt.id}
-              className="nav-bar__dropdown-option"
-              onClick={() => handleOptionClick(opt.id)}
-            >
-              {opt.label}
-            </button>
+            <div key={opt.id}>
+              <button
+                className="nav-bar__dropdown-option"
+                onClick={() => handleOptionClick(opt.id)}
+              >
+                {opt.label}
+                {opt.id === 'region' && (
+                  <span className="nav-bar__submenu-arrow">{regionOpen ? '\u2039' : '\u203A'}</span>
+                )}
+              </button>
+              {opt.id === 'region' && regionOpen && (
+                <div className="nav-bar__submenu">
+                  {REGION_NAMES.map((region) => (
+                    <button
+                      key={region}
+                      className="nav-bar__dropdown-option nav-bar__dropdown-option--sub"
+                      onClick={() => handleRegionSelect(region)}
+                    >
+                      {region}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
         </div>
       </div>

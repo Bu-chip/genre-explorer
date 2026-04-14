@@ -1,7 +1,9 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useGenres } from './hooks/useGenres'
 import { useLastfm } from './hooks/useLastfm'
+import { getRarityScore } from './utils/rarityScore'
+import { getPhrase } from './utils/phrases'
 import { SlotMachine } from './components/SlotMachine'
 import { NavBar } from './components/NavBar'
 import { SearchBox } from './components/SearchBox'
@@ -27,6 +29,23 @@ function App() {
   const cyclingTimerRef = useRef(null)
 
   const lastfm = useLastfm(selectedGenre?.name)
+
+  const genreIndex = useMemo(() => {
+    if (!selectedGenre || !genres) return null
+    return genres.findIndex((g) => g.slug === selectedGenre.slug)
+  }, [selectedGenre, genres])
+
+  const rarityScore = useMemo(() => {
+    if (!selectedGenre || !genres?.length) return 50
+    return getRarityScore(selectedGenre, genres, lastfm)
+  }, [selectedGenre, genres, lastfm])
+
+  const [contextPhrase, setContextPhrase] = useState(null)
+
+  useEffect(() => {
+    if (!selectedGenre) return
+    setContextPhrase(getPhrase(rarityScore, { index: genreIndex }))
+  }, [selectedGenre, rarityScore, genreIndex])
 
   const handleResult = useCallback((genre) => {
     if (cyclingTimerRef.current) {
@@ -135,16 +154,16 @@ function App() {
               pointerEvents: headerVisible ? 'auto' : 'none',
             }}
           >
-            <NavBar genres={genres} onRandom={handleRandom} onSelect={handleResult} disabled={spinning} />
+            <NavBar genres={genres} onRandom={handleRandom} onSelect={handleResult} disabled={spinning} currentGenre={selectedGenre} />
           </header>
 
           <section className="zone-discovery">
             <div ref={nameRef}>
-              <NavBar genres={genres} onRandom={handleRandom} onSelect={handleResult} disabled={spinning} />
+              <NavBar genres={genres} onRandom={handleRandom} onSelect={handleResult} disabled={spinning} currentGenre={selectedGenre} />
             </div>
 
             <div className="discovery-content">
-              <GenreName genre={selectedGenre} displayName={spinDisplay} />
+              <GenreName genre={selectedGenre} displayName={spinDisplay} contextPhrase={contextPhrase} />
               <AnimatePresence mode="wait">
                 <motion.div
                   key={selectedGenre.slug}
@@ -170,6 +189,7 @@ function App() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
               >
+                <RelativePosition genre={selectedGenre} allGenres={genres} />
                 <div className="exploration-grid">
                   <div className="exploration-grid__main">
                     <GenreDescription lastfm={lastfm} />
@@ -179,7 +199,6 @@ function App() {
                     />
                   </div>
                   <div className="exploration-grid__side">
-                    <RelativePosition genre={selectedGenre} allGenres={genres} />
                     <NearbyGenres
                       genre={selectedGenre}
                       allGenres={genres}

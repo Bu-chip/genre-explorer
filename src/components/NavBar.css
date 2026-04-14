@@ -111,6 +111,30 @@
   color: var(--gray-100);
 }
 
+.nav-bar__submenu-arrow {
+  margin-left: auto;
+  padding-left: var(--space-3);
+  color: var(--gray-500);
+}
+
+.nav-bar__submenu {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--gray-700);
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.nav-bar__dropdown-option--sub {
+  padding-left: var(--space-6);
+  color: var(--gray-400);
+  font-size: 0.6875rem;
+}
+
+.nav-bar__dropdown-option--sub:hover {
+  color: var(--gray-100);
+}
+
 /* Search — inline input that replaces the label */
 
 .nav-bar__search-field {
