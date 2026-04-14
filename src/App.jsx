@@ -7,7 +7,10 @@ import { NavBar } from './components/NavBar'
 import { SearchBox } from './components/SearchBox'
 import { GenreName, GenreLinks, GenreDescription } from './components/GenreCard'
 import { ListenLinks } from './components/ListenLinks'
+import { RelativePosition } from './components/RelativePosition'
 import { NearbyGenres } from './components/NearbyGenres'
+import { ShareButton } from './components/ShareButton'
+import { DiscoveryCounter } from './components/DiscoveryCounter'
 import './App.css'
 
 const CYCLE_COUNT = 5
@@ -166,12 +169,23 @@ function App() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                <GenreDescription lastfm={lastfm} />
-                <NearbyGenres
-                  genre={selectedGenre}
-                  allGenres={genres}
-                  onSelect={handleResult}
-                />
+                <div className="exploration-grid">
+                  <div className="exploration-grid__main">
+                    <GenreDescription lastfm={lastfm} />
+                  </div>
+                  <div className="exploration-grid__side">
+                    <RelativePosition genre={selectedGenre} allGenres={genres} />
+                    <NearbyGenres
+                      genre={selectedGenre}
+                      allGenres={genres}
+                      onSelect={handleResult}
+                    />
+                  </div>
+                </div>
+                <div className="exploration-footer">
+                  <ShareButton genre={selectedGenre} />
+                  <DiscoveryCounter genre={selectedGenre} total={genres.length} />
+                </div>
               </motion.div>
             </AnimatePresence>
           </section>

@@ -61,7 +61,7 @@
   font-size: var(--text-base);
   line-height: 1.6;
   color: var(--gray-300);
-  margin: 0 0 var(--space-6);
+  margin: 0 auto var(--space-6);
   max-width: 65ch;
 }
 
