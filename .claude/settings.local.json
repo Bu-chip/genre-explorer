@@ -20,7 +20,9 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:4173/genre-explorer/)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:4173/)",
       "Bash(curl -s http://localhost:4173/)",
-      "Bash(pkill -f \"serve dist\")"
+      "Bash(pkill -f \"serve dist\")",
+      "Bash(node -e ':*)",
+      "Bash(node -e \"try { require\\('sharp'\\); console.log\\('sharp-ok'\\); } catch { console.log\\('no-sharp'\\); }\")"
     ]
   }
 }
