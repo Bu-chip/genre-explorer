@@ -10,7 +10,7 @@ export function useGenres() {
   useEffect(() => {
     if (cachedGenres) return
 
-    fetch('/data/genres_index.json')
+    fetch(`${import.meta.env.BASE_URL}data/genres_index.json`)
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         return res.json()

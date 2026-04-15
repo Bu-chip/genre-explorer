@@ -26,7 +26,8 @@
 }
 
 .nav-bar__action:hover:not(:disabled) {
-  color: var(--gray-300);
+  color: var(--qcr-purple);
+  opacity: 0.6;
 }
 
 .nav-bar__action:disabled {

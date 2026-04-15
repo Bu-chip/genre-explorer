@@ -5,3 +5,9 @@
   text-align: center;
   margin: var(--space-8) 0 0;
 }
+
+.discovery-counter--compact {
+  display: block;
+  margin: var(--space-5) 0;
+  white-space: nowrap;
+}

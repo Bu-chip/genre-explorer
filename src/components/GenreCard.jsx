@@ -25,8 +25,6 @@ export function GenreName({ genre, displayName, contextPhrase }) {
           </motion.h2>
         )}
       </div>
-
-      <p className="genre-card__origin">Origin unknown</p>
     </div>
   )
 }

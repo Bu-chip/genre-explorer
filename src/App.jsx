@@ -16,6 +16,55 @@ import './App.css'
 const CYCLE_COUNT = 5
 const CYCLE_TICK = 100
 
+function Landing({ onRandom, total }) {
+  const [diceSpinning, setDiceSpinning] = useState(false)
+  const [hinting, setHinting] = useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setHinting(true), 4000)
+    return () => clearTimeout(timer)
+  }, [])
+
+  const handleDice = () => {
+    if (diceSpinning) return
+    setHinting(false)
+    setDiceSpinning(true)
+    setTimeout(() => {
+      setDiceSpinning(false)
+      onRandom()
+    }, 400)
+  }
+
+  return (
+    <div className="app__landing" onClick={() => setHinting(false)}>
+      <h1 className="landing__title">
+        <span>Random</span>
+        <span>Genre</span>
+        <span>Explorer</span>
+      </h1>
+
+      <motion.button
+        className={`landing__dice ${hinting ? 'landing__dice--hinting' : ''}`}
+        onClick={handleDice}
+        animate={diceSpinning ? { rotate: 360 } : { rotate: 0 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+        aria-label="Random genre"
+      >
+        <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="0.8">
+          <rect x="3" y="3" width="18" height="18" />
+          <circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none" />
+          <circle cx="15.5" cy="8.5" r="1.2" fill="currentColor" stroke="none" />
+          <circle cx="8.5" cy="15.5" r="1.2" fill="currentColor" stroke="none" />
+          <circle cx="15.5" cy="15.5" r="1.2" fill="currentColor" stroke="none" />
+          <circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none" />
+        </svg>
+      </motion.button>
+
+      <DiscoveryCounter genre={null} total={total} compact />
+    </div>
+  )
+}
+
 function App() {
   const { genres, loading, error } = useGenres()
   const [selectedGenre, setSelectedGenre] = useState(null)
@@ -25,6 +74,18 @@ function App() {
   const nameRef = useRef(null)
   const cyclingRef = useRef(false)
   const cyclingTimerRef = useRef(null)
+
+  // Deep link: load genre from hash on initial load
+  useEffect(() => {
+    if (!genres?.length || selectedGenre) return
+    const hash = window.location.hash
+    const match = hash.match(/^#genre=(.+)$/)
+    if (match) {
+      const slug = decodeURIComponent(match[1])
+      const genre = genres.find((g) => g.slug === slug)
+      if (genre) setSelectedGenre(genre)
+    }
+  }, [genres, selectedGenre])
 
   const lastfm = useLastfm(selectedGenre?.name)
 
@@ -54,6 +115,7 @@ function App() {
     setSpinDisplay(null)
     setSelectedGenre(genre)
     setHeaderVisible(false)
+    window.location.hash = `genre=${genre.slug}`
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [])
 
@@ -153,7 +215,6 @@ function App() {
   return (
     <div className="app">
       <div className="app__noise" />
-      <span className="app__watermark">Random Genre Explorer</span>
 
       {loading ? (
         <p className="app__loading">loading genres...</p>
@@ -170,6 +231,7 @@ function App() {
           </header>
 
           <section className="zone-discovery">
+            <span className="app__watermark">Random Genre Explorer</span>
             <div ref={nameRef}>
               <NavBar genres={genres} onRandom={handleRandom} onSelect={handleResult} disabled={spinning} currentGenre={selectedGenre} />
             </div>
@@ -180,6 +242,8 @@ function App() {
               <ShareButton genre={selectedGenre} />
             </div>
 
+            <DiscoveryCounter genre={selectedGenre} total={genres.length} compact />
+
             {scrollHintVisible && (
               <div className="scroll-hint" aria-hidden="true">
                 <svg width="16" height="10" viewBox="0 0 16 10" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -189,7 +253,7 @@ function App() {
             )}
           </section>
 
-          <section className="zone-exploration" style={{ '--genre-tint': selectedGenre.color }}>
+          <section className="zone-exploration">
             <AnimatePresence mode="wait">
               <motion.div
                 className="exploration-content"
@@ -215,18 +279,12 @@ function App() {
                     />
                   </div>
                 </div>
-                <DiscoveryCounter genre={selectedGenre} total={genres.length} />
               </motion.div>
             </AnimatePresence>
           </section>
         </>
       ) : (
-        <div className="app__landing">
-          <NavBar genres={genres} onRandom={handleRandom} onSelect={handleResult} disabled={false} currentGenre={null} />
-          <p className="app__landing-sub">
-            {genres.length.toLocaleString()} genres to explore
-          </p>
-        </div>
+        <Landing onRandom={handleRandom} total={genres.length} />
       )}
     </div>
   )

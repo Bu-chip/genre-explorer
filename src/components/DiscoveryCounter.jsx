@@ -21,7 +21,7 @@ function addSeenSlug(slug) {
   return seen.length
 }
 
-export function DiscoveryCounter({ genre, total }) {
+export function DiscoveryCounter({ genre, total, compact }) {
   const [count, setCount] = useState(() => getSeenSlugs().length)
 
   useEffect(() => {
@@ -30,9 +30,19 @@ export function DiscoveryCounter({ genre, total }) {
     }
   }, [genre?.slug])
 
+  if (compact) {
+    return (
+      <span className="discovery-counter discovery-counter--compact">
+        {count.toLocaleString()} / {total.toLocaleString()}
+      </span>
+    )
+  }
+
+  const text = count > 0
+    ? `${count.toLocaleString()} / ${total.toLocaleString()} genres discovered`
+    : `${total.toLocaleString()} genres to explore`
+
   return (
-    <p className="discovery-counter">
-      {count.toLocaleString()} / {total.toLocaleString()} genres discovered
-    </p>
+    <p className="discovery-counter">{text}</p>
   )
 }

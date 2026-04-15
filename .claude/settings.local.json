@@ -14,7 +14,13 @@
       "Bash(npx eslint:*)",
       "mcp__Claude_Preview__preview_start",
       "Bash(timeout 15 python scripts/check-lastfm-coverage.py)",
-      "Bash(python -c ':*)"
+      "Bash(python -c ':*)",
+      "Bash(npm run:*)",
+      "Bash(npx serve:*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:4173/genre-explorer/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:4173/)",
+      "Bash(curl -s http://localhost:4173/)",
+      "Bash(pkill -f \"serve dist\")"
     ]
   }
 }

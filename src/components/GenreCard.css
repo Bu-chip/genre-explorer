@@ -31,14 +31,6 @@
   margin: 0;
 }
 
-/* "Origin unknown" placeholder below genre name */
-.genre-card__origin {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--gray-500);
-  text-align: center;
-  margin: var(--space-3) 0 0;
-}
 
 /* Description (Zone 2) */
 .genre-card__desc-wrapper {
@@ -48,7 +40,8 @@
 .genre-card__desc-label {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  color: var(--gray-600);
+  color: var(--qcr-lime);
+  opacity: 0.3;
   margin: 0 0 var(--space-3);
 }
 

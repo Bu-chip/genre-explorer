@@ -13,7 +13,8 @@
 }
 
 .share-btn:hover {
-  color: var(--gray-400);
+  color: var(--qcr-purple);
+  opacity: 0.6;
 }
 
 .share-btn__icon {

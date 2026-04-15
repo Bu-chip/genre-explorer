@@ -22,17 +22,15 @@
 /* ===== Watermark ===== */
 
 .app__watermark {
-  position: fixed;
-  top: var(--space-4);
-  left: 0;
-  right: 0;
   text-align: center;
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  color: var(--gray-700);
+  color: var(--qcr-lime);
+  opacity: 0.3;
   z-index: 1;
   pointer-events: none;
   user-select: none;
+  margin-bottom: var(--space-7);
 }
 
 /* ===== Landing state ===== */
@@ -42,20 +40,56 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 80vh;
+  min-height: 100vh;
   position: relative;
   z-index: 1;
+  gap: var(--space-6);
 }
 
-.app__landing .nav-bar {
-  margin-bottom: var(--space-4);
+.landing__title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-light);
+  font-size: var(--text-hero);
+  line-height: 1.05;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--qcr-lime);
+  opacity: 0.5;
+  margin: 0;
 }
 
-.app__landing-sub {
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
+.landing__dice {
+  background: none;
+  border: none;
   color: var(--gray-500);
-  text-align: center;
+  cursor: pointer;
+  padding: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 150ms ease;
+  animation: landing-breathe 3s ease-in-out infinite;
+}
+
+.landing__dice:hover {
+  color: var(--gray-300);
+}
+
+.landing__dice--hinting {
+  animation: landing-breathe 3s ease-in-out infinite, landing-hint 2s ease-in-out infinite;
+}
+
+@keyframes landing-hint {
+  0%, 100% { color: var(--gray-500); }
+  50% { color: color-mix(in srgb, var(--qcr-purple) 50%, transparent); }
+}
+
+@keyframes landing-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
 }
 
 /* ===== Sticky header ===== */
@@ -99,13 +133,13 @@
   display: flex;
   justify-content: center;
   padding-top: var(--space-6);
-  color: var(--gray-700);
+  color: var(--qcr-lime);
   animation: scroll-pulse 2s ease-in-out infinite;
 }
 
 @keyframes scroll-pulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.7; }
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.3; }
 }
 
 /* ===== Zone 2: Exploration ===== */
@@ -116,8 +150,7 @@
   padding: var(--space-7) var(--space-5) var(--space-9);
   position: relative;
   z-index: 1;
-  background: color-mix(in srgb, var(--genre-tint) 3%, var(--gray-900));
-  transition: background-color 300ms ease;
+  background: var(--gray-900);
 }
 
 .zone-exploration > .exploration-content {

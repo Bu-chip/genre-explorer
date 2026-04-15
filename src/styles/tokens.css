@@ -51,6 +51,10 @@
   /* Semantic */
   --color-error: #c45c5c;
 
+  /* Brand — QCR */
+  --qcr-purple: #b48ead;
+  --qcr-lime: #c8ff00;
+
   /* Brand — listen links */
   --color-youtube: #FF0000;
   --color-spotify: #1DB954;
