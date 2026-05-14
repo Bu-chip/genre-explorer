@@ -52,7 +52,23 @@ function SearchIcon() {
   )
 }
 
-export function NavBar({ genres, onRandom, onSelect, disabled, currentGenre }) {
+function HeartIcon({ filled }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill={filled ? 'currentColor' : 'none'}
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+    >
+      <path d="M8 13.5 L2.2 7.8 A3.2 3.2 0 0 1 6.7 3.3 L8 4.6 L9.3 3.3 A3.2 3.2 0 0 1 13.8 7.8 Z" />
+    </svg>
+  )
+}
+
+export function NavBar({ genres, onRandom, onSelect, disabled, currentGenre, favorites, onClearFavorites }) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [regionOpen, setRegionOpen] = useState(false)
   const [searchActive, setSearchActive] = useState(false)
@@ -60,11 +76,13 @@ export function NavBar({ genres, onRandom, onSelect, disabled, currentGenre }) {
   const [results, setResults] = useState([])
   const [resultsOpen, setResultsOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
+  const [favoritesOpen, setFavoritesOpen] = useState(false)
 
   const barRef = useRef(null)
   const dropdownRef = useRef(null)
   const searchRef = useRef(null)
   const inputRef = useRef(null)
+  const favoritesRef = useRef(null)
 
   const updateResults = useCallback(
     (q) => {
@@ -157,7 +175,7 @@ export function NavBar({ genres, onRandom, onSelect, disabled, currentGenre }) {
     [genres, onSelect, onRandom],
   )
 
-  // Outside click: close dropdown and search
+  // Outside click: close dropdown, search and favorites
   useEffect(() => {
     const handler = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -167,10 +185,26 @@ export function NavBar({ genres, onRandom, onSelect, disabled, currentGenre }) {
       if (searchRef.current && !searchRef.current.contains(e.target)) {
         collapseSearch()
       }
+      if (favoritesRef.current && !favoritesRef.current.contains(e.target)) {
+        setFavoritesOpen(false)
+      }
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [collapseSearch])
+
+  const favoriteGenres = (favorites || [])
+    .map((slug) => genres?.find((g) => g.slug === slug))
+    .filter(Boolean)
+
+  const selectFavorite = (genre) => {
+    setFavoritesOpen(false)
+    onSelect(genre)
+  }
+
+  const handleClearFavorites = () => {
+    if (typeof onClearFavorites === 'function') onClearFavorites()
+  }
 
   const handleSearchKeyDown = (e) => {
     if (e.key === 'Escape') {
@@ -286,6 +320,59 @@ export function NavBar({ genres, onRandom, onSelect, disabled, currentGenre }) {
               </li>
             ))}
           </ul>
+        )}
+      </div>
+
+      {/* Separator */}
+      <div className="nav-bar__separator" />
+
+      {/* Favorites */}
+      <div className="nav-bar__section" ref={favoritesRef}>
+        <button
+          className="nav-bar__action"
+          onClick={() => setFavoritesOpen((o) => !o)}
+          aria-expanded={favoritesOpen}
+          aria-label="Favorites"
+        >
+          <HeartIcon filled={favoriteGenres.length > 0} />
+          <span>
+            Saved{favoriteGenres.length > 0 ? ` (${favoriteGenres.length})` : ''}
+          </span>
+        </button>
+
+        {favoritesOpen && (
+          <div className="nav-bar__favorites">
+            {favoriteGenres.length === 0 ? (
+              <p className="nav-bar__favorites-empty">
+                no saved genres yet. tap save on any genre to keep it here.
+              </p>
+            ) : (
+              <>
+                <ul className="nav-bar__favorites-list">
+                  {favoriteGenres.map((genre) => (
+                    <li
+                      key={genre.slug}
+                      className="nav-bar__result"
+                      onMouseDown={() => selectFavorite(genre)}
+                    >
+                      <span className="nav-bar__result-name">{genre.name}</span>
+                      <span
+                        className="nav-bar__result-dot"
+                        style={{ backgroundColor: genre.color }}
+                      />
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  type="button"
+                  className="nav-bar__favorites-clear"
+                  onClick={handleClearFavorites}
+                >
+                  clear all
+                </button>
+              </>
+            )}
+          </div>
         )}
       </div>
 

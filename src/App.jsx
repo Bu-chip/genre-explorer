@@ -2,14 +2,18 @@ import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useGenres } from './hooks/useGenres'
 import { useLastfm } from './hooks/useLastfm'
+import { useWikipedia } from './hooks/useWikipedia'
+import { useFavorites } from './hooks/useFavorites'
 import { getRarityScore } from './utils/rarityScore'
 import { getPhrase } from './utils/phrases'
 import { NavBar } from './components/NavBar'
 import { GenreName, GenreDescription } from './components/GenreCard'
+import { WikipediaCard } from './components/WikipediaCard'
 import { ListenLinks } from './components/ListenLinks'
 import { DeezerPreview } from './components/DeezerPreview'
 import { NearbyGenres } from './components/NearbyGenres'
 import { ShareButton } from './components/ShareButton'
+import { FavoriteButton } from './components/FavoriteButton'
 import { DiscoveryCounter } from './components/DiscoveryCounter'
 import './App.css'
 
@@ -88,6 +92,8 @@ function App() {
   }, [genres, selectedGenre])
 
   const lastfm = useLastfm(selectedGenre?.name)
+  const wikipedia = useWikipedia(selectedGenre?.name)
+  const { favorites, isFavorite, toggleFavorite, clearFavorites } = useFavorites()
 
   const genreIndex = useMemo(() => {
     if (!selectedGenre || !genres) return null
@@ -227,19 +233,25 @@ function App() {
               pointerEvents: headerVisible ? 'auto' : 'none',
             }}
           >
-            <NavBar genres={genres} onRandom={handleRandom} onSelect={handleResult} disabled={spinning} currentGenre={selectedGenre} />
+            <NavBar genres={genres} onRandom={handleRandom} onSelect={handleResult} disabled={spinning} currentGenre={selectedGenre} favorites={favorites} onClearFavorites={clearFavorites} />
           </header>
 
           <section className="zone-discovery">
             <span className="app__watermark">Random Genre Explorer</span>
             <div ref={nameRef}>
-              <NavBar genres={genres} onRandom={handleRandom} onSelect={handleResult} disabled={spinning} currentGenre={selectedGenre} />
+              <NavBar genres={genres} onRandom={handleRandom} onSelect={handleResult} disabled={spinning} currentGenre={selectedGenre} favorites={favorites} onClearFavorites={clearFavorites} />
             </div>
 
             <div className="discovery-content">
               <GenreName genre={selectedGenre} displayName={spinDisplay} contextPhrase={contextPhrase} />
               <ListenLinks name={selectedGenre.name} slug={selectedGenre.slug} />
-              <ShareButton genre={selectedGenre} />
+              <div className="discovery-actions">
+                <FavoriteButton
+                  active={isFavorite(selectedGenre.slug)}
+                  onToggle={() => toggleFavorite(selectedGenre.slug)}
+                />
+                <ShareButton genre={selectedGenre} />
+              </div>
             </div>
 
             <DiscoveryCounter genre={selectedGenre} total={genres.length} compact />
@@ -266,6 +278,7 @@ function App() {
                 <div className="exploration-grid">
                   <div className="exploration-grid__main">
                     <GenreDescription lastfm={lastfm} />
+                    <WikipediaCard wikipedia={wikipedia} />
                     <DeezerPreview
                       artist={lastfm?.topTrack?.artist}
                       track={lastfm?.topTrack?.title}
