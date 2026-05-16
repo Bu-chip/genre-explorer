@@ -17,10 +17,11 @@
 }
 
 .deezer-preview__cover {
-  width: 80px;
-  height: 80px;
+  width: 64px;
+  height: 64px;
   flex-shrink: 0;
   object-fit: cover;
+  filter: saturate(0.55);
 }
 
 .deezer-preview__info {
