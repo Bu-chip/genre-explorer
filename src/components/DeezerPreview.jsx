@@ -141,8 +141,8 @@ export function DeezerPreview({ artist, track }) {
           className="deezer-preview__cover"
           src={data.cover}
           alt=""
-          width={80}
-          height={80}
+          width={64}
+          height={64}
         />
       )}
       <div className="deezer-preview__info">

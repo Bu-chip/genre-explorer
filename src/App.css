@@ -135,8 +135,8 @@
 }
 
 .discovery-preview {
-  max-width: 420px;
-  margin: var(--space-6) auto 0;
+  max-width: 360px;
+  margin: var(--space-7) auto 0;
   text-align: left;
 }
 

@@ -244,12 +244,6 @@ function App() {
 
             <div className="discovery-content">
               <GenreName genre={selectedGenre} displayName={spinDisplay} contextPhrase={contextPhrase} />
-              <div className="discovery-preview">
-                <DeezerPreview
-                  artist={lastfm?.topTrack?.artist}
-                  track={lastfm?.topTrack?.title}
-                />
-              </div>
               <ListenLinks name={selectedGenre.name} slug={selectedGenre.slug} />
               <div className="discovery-actions">
                 <FavoriteButton
@@ -261,6 +255,13 @@ function App() {
             </div>
 
             <DiscoveryCounter genre={selectedGenre} total={genres.length} compact />
+
+            <div className="discovery-preview">
+              <DeezerPreview
+                artist={lastfm?.topTrack?.artist}
+                track={lastfm?.topTrack?.title}
+              />
+            </div>
 
             {scrollHintVisible && (
               <div className="scroll-hint" aria-hidden="true">
