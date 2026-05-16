@@ -33,8 +33,53 @@ async function fetchDeezer(artist, track) {
   return null
 }
 
+function PlayIcon() {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M8 5v14l11-7L8 5z" />
+    </svg>
+  )
+}
+
+function PauseIcon() {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+    </svg>
+  )
+}
+
+function Skeleton() {
+  return (
+    <div className="deezer-preview-wrapper">
+      <p className="deezer-preview__label">a taste of the genre</p>
+      <div className="deezer-preview deezer-preview--skeleton" aria-hidden="true">
+        <div className="deezer-preview__skel-cover" />
+        <div className="deezer-preview__skel-button" />
+        <div className="deezer-preview__skel-info">
+          <div className="deezer-preview__skel-text" />
+          <div className="deezer-preview__skel-bar" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function DeezerPreview({ artist, track }) {
   const [data, setData] = useState(null)
+  const [notFound, setNotFound] = useState(false)
   const [playing, setPlaying] = useState(false)
   const [progress, setProgress] = useState(0)
   const audioRef = useRef(null)
@@ -47,25 +92,29 @@ export function DeezerPreview({ artist, track }) {
     let cancelled = false
 
     fetchDeezer(artist, track).then((result) => {
-      if (!cancelled && result?.preview) {
+      if (cancelled) return
+      if (result?.preview) {
         setData({
           preview: result.preview,
           cover: result.album?.cover_medium,
           artist: result.artist?.name || artist,
           title: result.title || track,
         })
+      } else {
+        setNotFound(true)
       }
     })
 
     return () => {
       cancelled = true
       setData(null)
+      setNotFound(false)
       setPlaying(false)
       setProgress(0)
     }
   }, [artist, track])
 
-  // Setup audio element
+  // Setup audio element, autoplay when a new preview URL arrives
   useEffect(() => {
     if (!data?.preview) return
 
@@ -76,8 +125,11 @@ export function DeezerPreview({ artist, track }) {
       setPlaying(false)
       setProgress(0)
     }
-
     audio.addEventListener('ended', onEnded)
+
+    // Autoplay; stay silently paused if the browser blocks it (e.g. Safari iOS
+    // before user gesture).
+    audio.play().then(() => setPlaying(true)).catch(() => {})
 
     return () => {
       audio.removeEventListener('ended', onEnded)
@@ -130,33 +182,33 @@ export function DeezerPreview({ artist, track }) {
     setProgress(pct)
   }, [])
 
-  if (!data) return null
+  if (notFound) return null
+  if (!data) return <Skeleton />
 
   return (
     <div className="deezer-preview-wrapper">
       <p className="deezer-preview__label">a taste of the genre</p>
       <div className="deezer-preview">
-      {data.cover && (
-        <img
-          className="deezer-preview__cover"
-          src={data.cover}
-          alt=""
-          width={64}
-          height={64}
-        />
-      )}
-      <div className="deezer-preview__info">
-        <p className="deezer-preview__track">
-          {data.artist} &mdash; {data.title}
-        </p>
-        <div className="deezer-preview__controls">
-          <button
-            className="deezer-preview__play"
-            onClick={togglePlay}
-            aria-label={playing ? 'Pause' : 'Play'}
-          >
-            {playing ? '\u275A\u275A' : '\u25B6'}
-          </button>
+        {data.cover && (
+          <img
+            className="deezer-preview__cover"
+            src={data.cover}
+            alt=""
+            width={64}
+            height={64}
+          />
+        )}
+        <button
+          className="deezer-preview__play"
+          onClick={togglePlay}
+          aria-label={playing ? 'Pause' : 'Play'}
+        >
+          {playing ? <PauseIcon /> : <PlayIcon />}
+        </button>
+        <div className="deezer-preview__info">
+          <p className="deezer-preview__track">
+            {data.artist} &mdash; {data.title}
+          </p>
           <div className="deezer-preview__bar" onClick={handleBarClick}>
             <div
               className="deezer-preview__fill"
@@ -165,7 +217,6 @@ export function DeezerPreview({ artist, track }) {
           </div>
         </div>
       </div>
-    </div>
     </div>
   )
 }
