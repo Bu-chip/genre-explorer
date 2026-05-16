@@ -17,6 +17,7 @@
 }
 
 .deezer-preview__cover {
+  display: block;
   width: 64px;
   height: 64px;
   flex-shrink: 0;
