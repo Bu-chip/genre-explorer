@@ -134,6 +134,20 @@
   gap: var(--space-2);
 }
 
+.discovery-preview {
+  max-width: 420px;
+  margin: var(--space-6) auto 0;
+  text-align: left;
+}
+
+.discovery-preview:empty {
+  display: none;
+}
+
+.discovery-preview .deezer-preview-wrapper {
+  margin-bottom: 0;
+}
+
 /* ===== Scroll hint ===== */
 
 .scroll-hint {
