@@ -2,7 +2,10 @@ import './ListenLinks.css'
 
 function isMobile() {
   if (typeof navigator === 'undefined') return false
-  return /iPhone|iPad|iPod|Android/.test(navigator.userAgent)
+  const ua = navigator.userAgent
+  if (/iPhone|iPad|iPod|Android/.test(ua)) return true
+  // iPadOS 13+ reports a Mac UA by default; touch points disambiguate it.
+  return /Macintosh/.test(ua) && navigator.maxTouchPoints > 1
 }
 
 const LINKS = [
