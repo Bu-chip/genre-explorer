@@ -1,5 +1,10 @@
 import './ListenLinks.css'
 
+function isMobile() {
+  if (typeof navigator === 'undefined') return false
+  return /iPhone|iPad|iPod|Android/.test(navigator.userAgent)
+}
+
 const LINKS = [
   {
     id: 'youtube',
@@ -11,8 +16,12 @@ const LINKS = [
   {
     id: 'spotify',
     title: 'Listen on Spotify',
-    url: (name) =>
-      `https://open.spotify.com/search/${encodeURIComponent('The Sound of ' + name)}`,
+    url: (name) => {
+      const query = encodeURIComponent('The Sound of ' + name)
+      return isMobile()
+        ? `spotify:search:${query}`
+        : `https://open.spotify.com/search/${query}`
+    },
     path: 'M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424a.623.623 0 0 1-.857.207c-2.348-1.435-5.304-1.76-8.785-.964a.623.623 0 0 1-.277-1.215c3.809-.87 7.077-.496 9.712 1.115a.623.623 0 0 1 .207.857zm1.225-2.722a.78.78 0 0 1-1.072.257c-2.687-1.652-6.785-2.131-9.965-1.166a.78.78 0 0 1-.972-.516.781.781 0 0 1 .516-.973c3.632-1.102 8.147-.568 11.236 1.327a.78.78 0 0 1 .257 1.071zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71a.935.935 0 1 1-.543-1.79c3.532-1.072 9.404-.865 13.115 1.338a.935.935 0 0 1-.953 1.609z',
   },
   {
