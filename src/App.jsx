@@ -244,6 +244,12 @@ function App() {
 
             <div className="discovery-content">
               <GenreName genre={selectedGenre} displayName={spinDisplay} contextPhrase={contextPhrase} />
+              <div className="discovery-preview">
+                <DeezerPreview
+                  artist={lastfm?.topTrack?.artist}
+                  track={lastfm?.topTrack?.title}
+                />
+              </div>
               <ListenLinks name={selectedGenre.name} slug={selectedGenre.slug} />
               <div className="discovery-actions">
                 <FavoriteButton
@@ -279,10 +285,6 @@ function App() {
                   <div className="exploration-grid__main">
                     <GenreDescription lastfm={lastfm} />
                     <WikipediaCard wikipedia={wikipedia} />
-                    <DeezerPreview
-                      artist={lastfm?.topTrack?.artist}
-                      track={lastfm?.topTrack?.title}
-                    />
                   </div>
                   <div className="exploration-grid__side">
                     <NearbyGenres
