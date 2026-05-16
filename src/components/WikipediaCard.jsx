@@ -1,11 +1,26 @@
 import './WikipediaCard.css'
 
+function splitParagraphs(text) {
+  return text
+    .split(/\n+/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+}
+
 export function WikipediaCard({ wikipedia }) {
   if (!wikipedia?.extract) return null
 
+  const paragraphs = splitParagraphs(wikipedia.extract)
+  if (paragraphs.length === 0) return null
+
   return (
     <div className="wiki-card">
-      <p className="wiki-card__label">from wikipedia</p>
+      <div className="wiki-card__header">
+        <p className="wiki-card__label">from wikipedia</p>
+        {wikipedia.description && (
+          <p className="wiki-card__description">{wikipedia.description}</p>
+        )}
+      </div>
       <div className="wiki-card__body">
         {wikipedia.thumbnail && (
           <img
@@ -16,7 +31,9 @@ export function WikipediaCard({ wikipedia }) {
           />
         )}
         <div className="wiki-card__text">
-          <p className="wiki-card__extract">{wikipedia.extract}</p>
+          {paragraphs.map((para, i) => (
+            <p key={i} className="wiki-card__extract">{para}</p>
+          ))}
           {wikipedia.url && (
             <a
               className="wiki-card__link"
