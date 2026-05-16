@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useGenres } from './hooks/useGenres'
 import { useLastfm } from './hooks/useLastfm'
+import { useTrack } from './hooks/useTrack'
 import { useWikipedia } from './hooks/useWikipedia'
 import { useFavorites } from './hooks/useFavorites'
 import { getRarityScore } from './utils/rarityScore'
@@ -92,6 +93,7 @@ function App() {
   }, [genres, selectedGenre])
 
   const lastfm = useLastfm(selectedGenre?.name)
+  const track = useTrack(selectedGenre?.name)
   const wikipedia = useWikipedia(selectedGenre?.name)
   const { favorites, isFavorite, toggleFavorite, clearFavorites } = useFavorites()
 
@@ -258,8 +260,8 @@ function App() {
 
             <div className="discovery-preview">
               <DeezerPreview
-                artist={lastfm?.topTrack?.artist}
-                track={lastfm?.topTrack?.title}
+                artist={track?.artist}
+                track={track?.title}
               />
             </div>
 
