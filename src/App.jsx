@@ -27,10 +27,11 @@ const SCRAMBLE_DURATION = 520
 const SCRAMBLE_TICK = 40
 const RANDOM_COUNT = 4
 const RANDOM_ALIGNMENTS = ['left', 'center', 'right', 'center']
-const GLITCH_DELAY_MIN = 3000
-const GLITCH_DELAY_MAX = 5000
-const GLITCH_HOLD_MIN = 150
-const GLITCH_HOLD_MAX = 250
+const GLITCH_DELAY_MIN = 1500
+const GLITCH_DELAY_MAX = 2500
+const GLITCH_HOLD_MIN = 200
+const GLITCH_HOLD_MAX = 300
+const GLITCH_LETTER_COUNT = 3
 
 function randomGlyph() {
   return SCRAMBLE_GLYPHS[Math.floor(Math.random() * SCRAMBLE_GLYPHS.length)]
@@ -94,9 +95,8 @@ function Landing({ onRandom, total }) {
     const runGlitch = () => {
       if (cancelled) return
       const which = Math.floor(Math.random() * RANDOM_COUNT)
-      const count = 1 + Math.floor(Math.random() * 2)
       const positions = new Set()
-      while (positions.size < count) {
+      while (positions.size < GLITCH_LETTER_COUNT) {
         positions.add(Math.floor(Math.random() * RANDOM_LETTERS.length))
       }
       setDisplays((prev) =>
