@@ -61,35 +61,32 @@
   margin: 0;
 }
 
-.landing__dice {
+.landing__random {
   background: none;
   border: none;
-  color: var(--gray-500);
+  padding: var(--space-4) var(--space-5);
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-light);
+  font-size: var(--text-hero);
+  line-height: 1.05;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--qcr-lime);
   cursor: pointer;
-  padding: var(--space-4);
-  display: flex;
-  align-items: center;
+  display: inline-flex;
+  align-items: baseline;
   justify-content: center;
-  transition: color 150ms ease;
-  animation: landing-breathe 3s ease-in-out infinite;
 }
 
-.landing__dice:hover {
-  color: var(--gray-300);
+.landing__random:focus-visible {
+  outline: 1px solid var(--qcr-lime);
+  outline-offset: var(--space-3);
 }
 
-.landing__dice--hinting {
-  animation: landing-breathe 3s ease-in-out infinite, landing-hint 2s ease-in-out infinite;
-}
-
-@keyframes landing-hint {
-  0%, 100% { color: var(--gray-500); }
-  50% { color: color-mix(in srgb, var(--qcr-purple) 50%, transparent); }
-}
-
-@keyframes landing-breathe {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.03); }
+.landing__random-letter {
+  display: inline-block;
+  min-width: 0.6em;
+  text-align: center;
 }
 
 /* ===== Sticky header ===== */
