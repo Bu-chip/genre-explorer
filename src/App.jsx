@@ -33,6 +33,22 @@ const GLITCH_HOLD_MIN = 200
 const GLITCH_HOLD_MAX = 300
 const GLITCH_LETTER_COUNT = 3
 
+const MARQUEE_TEXT = 'random · random · random · genre explorer · '.repeat(14)
+
+function Marquee({ direction }) {
+  return (
+    <div
+      className={`landing__marquee landing__marquee--${direction}`}
+      aria-hidden="true"
+    >
+      <div className="landing__marquee-track">
+        <span className="landing__marquee-copy">{MARQUEE_TEXT}</span>
+        <span className="landing__marquee-copy">{MARQUEE_TEXT}</span>
+      </div>
+    </div>
+  )
+}
+
 function randomGlyph() {
   return SCRAMBLE_GLYPHS[Math.floor(Math.random() * SCRAMBLE_GLYPHS.length)]
 }
@@ -127,7 +143,9 @@ function Landing({ onRandom, total }) {
 
   return (
     <div className="app__landing">
-      <h1 className="landing__title">random genre explorer</h1>
+      <h1 className="visually-hidden">Random Genre Explorer</h1>
+
+      <Marquee direction="rtl" />
 
       <div className="landing__randoms">
         {displays.map((display, i) => (
@@ -144,6 +162,8 @@ function Landing({ onRandom, total }) {
           </button>
         ))}
       </div>
+
+      <Marquee direction="ltr" />
 
       <DiscoveryCounter genre={null} total={total} compact />
     </div>
