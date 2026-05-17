@@ -5,8 +5,7 @@
 .deezer-preview__label {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  color: var(--qcr-lime);
-  opacity: 0.3;
+  color: color-mix(in srgb, var(--qcr-lime) 30%, transparent);
   margin: 0 0 var(--space-3);
 }
 
