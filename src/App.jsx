@@ -21,49 +21,69 @@ import './App.css'
 const CYCLE_COUNT = 5
 const CYCLE_TICK = 100
 
+const RANDOM_LETTERS = ['R', 'A', 'N', 'D', 'O', 'M']
+const SCRAMBLE_GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789*#/?'
+const SCRAMBLE_DURATION = 520
+const SCRAMBLE_TICK = 40
+
+function randomGlyph() {
+  return SCRAMBLE_GLYPHS[Math.floor(Math.random() * SCRAMBLE_GLYPHS.length)]
+}
+
 function Landing({ onRandom, total }) {
-  const [diceSpinning, setDiceSpinning] = useState(false)
-  const [hinting, setHinting] = useState(false)
+  const [display, setDisplay] = useState(RANDOM_LETTERS)
+  const [scrambling, setScrambling] = useState(false)
+  const timerRef = useRef(null)
 
   useEffect(() => {
-    const timer = setTimeout(() => setHinting(true), 4000)
-    return () => clearTimeout(timer)
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
   }, [])
 
-  const handleDice = () => {
-    if (diceSpinning) return
-    setHinting(false)
-    setDiceSpinning(true)
-    setTimeout(() => {
-      setDiceSpinning(false)
-      onRandom()
-    }, 400)
+  const handleClick = () => {
+    if (scrambling) return
+    setScrambling(true)
+
+    const start = performance.now()
+    const settleStep = SCRAMBLE_DURATION / RANDOM_LETTERS.length
+
+    timerRef.current = setInterval(() => {
+      const elapsed = performance.now() - start
+      const next = RANDOM_LETTERS.map((target, i) => {
+        const settledAt = (i + 1) * settleStep
+        return elapsed >= settledAt ? target : randomGlyph()
+      })
+      setDisplay(next)
+
+      if (elapsed >= SCRAMBLE_DURATION) {
+        clearInterval(timerRef.current)
+        timerRef.current = null
+        setDisplay(RANDOM_LETTERS)
+        setScrambling(false)
+        onRandom()
+      }
+    }, SCRAMBLE_TICK)
   }
 
   return (
-    <div className="app__landing" onClick={() => setHinting(false)}>
+    <div className="app__landing">
       <h1 className="landing__title">
         <span>Random</span>
         <span>Genre</span>
         <span>Explorer</span>
       </h1>
 
-      <motion.button
-        className={`landing__dice ${hinting ? 'landing__dice--hinting' : ''}`}
-        onClick={handleDice}
-        animate={diceSpinning ? { rotate: 360 } : { rotate: 0 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
+      <button
+        type="button"
+        className="landing__random"
+        onClick={handleClick}
         aria-label="Random genre"
       >
-        <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="0.8">
-          <rect x="3" y="3" width="18" height="18" />
-          <circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none" />
-          <circle cx="15.5" cy="8.5" r="1.2" fill="currentColor" stroke="none" />
-          <circle cx="8.5" cy="15.5" r="1.2" fill="currentColor" stroke="none" />
-          <circle cx="15.5" cy="15.5" r="1.2" fill="currentColor" stroke="none" />
-          <circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none" />
-        </svg>
-      </motion.button>
+        {display.map((char, i) => (
+          <span key={i} className="landing__random-letter">{char}</span>
+        ))}
+      </button>
 
       <DiscoveryCounter genre={null} total={total} compact />
     </div>
