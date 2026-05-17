@@ -1,5 +1,6 @@
 .related {
-  width: 100%;
+  max-width: 65ch;
+  margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0;

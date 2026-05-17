@@ -34,7 +34,8 @@
 
 /* Description (Zone 2) */
 .genre-card__desc-wrapper {
-  margin: 0 0 var(--space-6);
+  max-width: 65ch;
+  margin: 0 auto;
 }
 
 .genre-card__desc-label {
