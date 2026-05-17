@@ -285,17 +285,13 @@ function App() {
                 transition={{ duration: 0.2 }}
               >
                 <div className="exploration-grid">
-                  <div className="exploration-grid__main">
-                    <GenreDescription lastfm={lastfm} />
-                    <WikipediaCard wikipedia={wikipedia} />
-                  </div>
-                  <div className="exploration-grid__side">
-                    <NearbyGenres
-                      genre={selectedGenre}
-                      allGenres={genres}
-                      onSelect={handleResult}
-                    />
-                  </div>
+                  <GenreDescription lastfm={lastfm} />
+                  <WikipediaCard wikipedia={wikipedia} />
+                  <NearbyGenres
+                    genre={selectedGenre}
+                    allGenres={genres}
+                    onSelect={handleResult}
+                  />
                 </div>
               </motion.div>
             </AnimatePresence>

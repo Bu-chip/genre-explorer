@@ -1,5 +1,6 @@
 .wiki-card {
-  margin: 0 0 var(--space-6);
+  max-width: 65ch;
+  margin: 0 auto;
 }
 
 .wiki-card__header {
