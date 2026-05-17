@@ -65,7 +65,7 @@ function PauseIcon() {
 function Skeleton() {
   return (
     <div className="deezer-preview-wrapper">
-      <p className="deezer-preview__label">a taste of the genre</p>
+      <Label />
       <div className="deezer-preview deezer-preview--skeleton" aria-hidden="true">
         <div className="deezer-preview__skel-cover" />
         <div className="deezer-preview__skel-button" />
@@ -75,6 +75,14 @@ function Skeleton() {
         </div>
       </div>
     </div>
+  )
+}
+
+function Label() {
+  return (
+    <p className="deezer-preview__label">
+      a taste of the genre <TrackInfoPopover />
+    </p>
   )
 }
 
@@ -188,7 +196,7 @@ export function DeezerPreview({ artist, track }) {
 
   return (
     <div className="deezer-preview-wrapper">
-      <p className="deezer-preview__label">a taste of the genre</p>
+      <Label />
       <div className="deezer-preview">
         {data.cover && (
           <img
@@ -208,10 +216,7 @@ export function DeezerPreview({ artist, track }) {
         </button>
         <div className="deezer-preview__info">
           <p className="deezer-preview__track">
-            <span className="deezer-preview__track-text">
-              {data.artist} &mdash; {data.title}
-            </span>
-            <TrackInfoPopover />
+            {data.artist} &mdash; {data.title}
           </p>
           <div className="deezer-preview__bar" onClick={handleBarClick}>
             <div

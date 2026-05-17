@@ -49,9 +49,9 @@ export function TrackInfoPopover() {
         </svg>
       </button>
       {open && (
-        <div className="track-info__popover" role="tooltip">
+        <span className="track-info__popover" role="tooltip">
           {DISCLAIMER}
-        </div>
+        </span>
       )}
     </span>
   )
