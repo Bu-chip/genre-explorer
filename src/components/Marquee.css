@@ -1,0 +1,45 @@
+.marquee {
+  width: 100vw;
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-xs);
+  letter-spacing: 0.05em;
+  color: var(--gray-500);
+  text-transform: lowercase;
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
+}
+
+.marquee__track {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 50s linear infinite;
+  will-change: transform;
+}
+
+.marquee__copy {
+  flex-shrink: 0;
+}
+
+.marquee--ltr .marquee__track {
+  animation-direction: reverse;
+}
+
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Header variant: anchored to top of the genre view, breaks out of the
+   760px max-width container so it spans the viewport edge to edge. */
+.marquee--header {
+  margin-left: calc(-1 * var(--space-5));
+  margin-right: calc(-1 * var(--space-5));
+  width: 100vw;
+}
+
+.marquee--header .marquee__track {
+  animation-duration: 45s;
+}
