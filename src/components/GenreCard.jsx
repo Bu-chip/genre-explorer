@@ -1,15 +1,11 @@
 import { motion } from 'framer-motion'
 import './GenreCard.css'
 
-export function GenreName({ genre, displayName, contextPhrase }) {
+export function GenreName({ genre, displayName }) {
   if (!genre) return null
 
   return (
     <div className="genre-card">
-      <p className="genre-card__context">
-        {displayName ? 'spinning...' : (contextPhrase || 'spinning...')}
-      </p>
-
       <div className="genre-card__name-wrapper">
         {displayName ? (
           <h2 className="genre-card__name">{displayName}</h2>

@@ -4,16 +4,6 @@
   text-align: center;
 }
 
-/* "spinning..." contextual phrase above genre name */
-.genre-card__context {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--gray-500);
-  text-transform: lowercase;
-  text-align: center;
-  margin: 0 0 var(--space-4);
-}
-
 .genre-card__name-wrapper {
   overflow: hidden;
   width: 100%;
@@ -22,13 +12,16 @@
 .genre-card__name {
   font-family: var(--font-display);
   font-weight: var(--font-weight-light);
-  font-size: var(--text-hero);
-  line-height: 1.05;
-  letter-spacing: 0.05em;
+  font-size: var(--text-display);
+  line-height: 1;
+  letter-spacing: 0.04em;
   color: var(--gray-100);
   text-transform: uppercase;
   text-align: center;
   margin: 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 
@@ -54,4 +47,3 @@
   margin: 0;
   max-width: 65ch;
 }
-

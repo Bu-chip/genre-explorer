@@ -17,6 +17,8 @@ import { NearbyGenres } from './components/NearbyGenres'
 import { ShareButton } from './components/ShareButton'
 import { FavoriteButton } from './components/FavoriteButton'
 import { DiscoveryCounter } from './components/DiscoveryCounter'
+import { Marquee } from './components/Marquee'
+import { ContextPhrase } from './components/ContextPhrase'
 import './App.css'
 
 const CYCLE_COUNT = 5
@@ -34,20 +36,7 @@ const GLITCH_HOLD_MAX = 300
 const GLITCH_LETTER_COUNT = 3
 
 const MARQUEE_TEXT = 'random · random · random · genre explorer · '.repeat(14)
-
-function Marquee({ direction }) {
-  return (
-    <div
-      className={`landing__marquee landing__marquee--${direction}`}
-      aria-hidden="true"
-    >
-      <div className="landing__marquee-track">
-        <span className="landing__marquee-copy">{MARQUEE_TEXT}</span>
-        <span className="landing__marquee-copy">{MARQUEE_TEXT}</span>
-      </div>
-    </div>
-  )
-}
+const HEADER_MARQUEE_TEXT = 'random genre explorer · '.repeat(20)
 
 function freshDisplays() {
   return Array.from({ length: RANDOM_COUNT }, () => [...RANDOM_LETTERS])
@@ -141,7 +130,7 @@ function Landing({ onRandom, total }) {
     <div className="app__landing">
       <h1 className="visually-hidden">Random Genre Explorer</h1>
 
-      <Marquee direction="rtl" />
+      <Marquee direction="rtl" text={MARQUEE_TEXT} className="marquee--landing" />
 
       <div className="landing__randoms">
         {displays.map((display, i) => (
@@ -159,7 +148,7 @@ function Landing({ onRandom, total }) {
         ))}
       </div>
 
-      <Marquee direction="ltr" />
+      <Marquee direction="ltr" text={MARQUEE_TEXT} className="marquee--landing" />
 
       <DiscoveryCounter genre={null} total={total} compact />
     </div>
@@ -335,20 +324,28 @@ function App() {
           </header>
 
           <section className="zone-discovery">
-            <span className="app__watermark">Random Genre Explorer</span>
-            <div ref={nameRef}>
-              <NavBar genres={genres} onRandom={handleRandom} onSelect={handleResult} disabled={spinning} currentGenre={selectedGenre} favorites={favorites} onClearFavorites={clearFavorites} />
-            </div>
+            <h1 className="visually-hidden">Random Genre Explorer</h1>
 
-            <div className="discovery-content">
-              <GenreName genre={selectedGenre} displayName={spinDisplay} contextPhrase={contextPhrase} />
-              <ListenLinks name={selectedGenre.name} slug={selectedGenre.slug} />
-              <div className="discovery-actions">
-                <FavoriteButton
-                  active={isFavorite(selectedGenre.slug)}
-                  onToggle={() => toggleFavorite(selectedGenre.slug)}
-                />
-                <ShareButton genre={selectedGenre} />
+            <div className="discovery-header">
+              <Marquee
+                direction="rtl"
+                text={HEADER_MARQUEE_TEXT}
+                className="marquee--header"
+              />
+              <div className="discovery-header__nav" ref={nameRef}>
+                <NavBar genres={genres} onRandom={handleRandom} onSelect={handleResult} disabled={spinning} currentGenre={selectedGenre} favorites={favorites} onClearFavorites={clearFavorites} />
+              </div>
+              <div className="discovery-content">
+                <GenreName genre={selectedGenre} displayName={spinDisplay} />
+                <ContextPhrase phrase={contextPhrase} spinning={!!spinDisplay} />
+                <ListenLinks name={selectedGenre.name} slug={selectedGenre.slug} />
+                <div className="discovery-actions">
+                  <FavoriteButton
+                    active={isFavorite(selectedGenre.slug)}
+                    onToggle={() => toggleFavorite(selectedGenre.slug)}
+                  />
+                  <ShareButton genre={selectedGenre} />
+                </div>
               </div>
             </div>
 
