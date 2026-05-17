@@ -7,6 +7,7 @@ import { useWikipedia } from './hooks/useWikipedia'
 import { useFavorites } from './hooks/useFavorites'
 import { getRarityScore } from './utils/rarityScore'
 import { getPhrase } from './utils/phrases'
+import { randomGlyph } from './utils/glitch'
 import { NavBar } from './components/NavBar'
 import { GenreName, GenreDescription } from './components/GenreCard'
 import { WikipediaCard } from './components/WikipediaCard'
@@ -22,7 +23,6 @@ const CYCLE_COUNT = 5
 const CYCLE_TICK = 100
 
 const RANDOM_LETTERS = ['R', 'A', 'N', 'D', 'O', 'M']
-const SCRAMBLE_GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789*#/?'
 const SCRAMBLE_DURATION = 520
 const SCRAMBLE_TICK = 40
 const RANDOM_COUNT = 4
@@ -47,10 +47,6 @@ function Marquee({ direction }) {
       </div>
     </div>
   )
-}
-
-function randomGlyph() {
-  return SCRAMBLE_GLYPHS[Math.floor(Math.random() * SCRAMBLE_GLYPHS.length)]
 }
 
 function freshDisplays() {
