@@ -25,21 +25,25 @@ const RANDOM_LETTERS = ['R', 'A', 'N', 'D', 'O', 'M']
 const SCRAMBLE_GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789*#/?'
 const SCRAMBLE_DURATION = 520
 const SCRAMBLE_TICK = 40
+const RANDOM_COUNT = 4
+const RANDOM_ALIGNMENTS = ['left', 'center', 'right', 'center']
+const GLITCH_DELAY_MIN = 3000
+const GLITCH_DELAY_MAX = 5000
+const GLITCH_HOLD_MIN = 150
+const GLITCH_HOLD_MAX = 250
 
 function randomGlyph() {
   return SCRAMBLE_GLYPHS[Math.floor(Math.random() * SCRAMBLE_GLYPHS.length)]
 }
 
-function Landing({ onRandom, total }) {
-  const [display, setDisplay] = useState(RANDOM_LETTERS)
-  const [scrambling, setScrambling] = useState(false)
-  const timerRef = useRef(null)
+function freshDisplays() {
+  return Array.from({ length: RANDOM_COUNT }, () => [...RANDOM_LETTERS])
+}
 
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-  }, [])
+function Landing({ onRandom, total }) {
+  const [displays, setDisplays] = useState(freshDisplays)
+  const [scrambling, setScrambling] = useState(false)
+  const scrambleTimerRef = useRef(null)
 
   const handleClick = () => {
     if (scrambling) return
@@ -48,42 +52,98 @@ function Landing({ onRandom, total }) {
     const start = performance.now()
     const settleStep = SCRAMBLE_DURATION / RANDOM_LETTERS.length
 
-    timerRef.current = setInterval(() => {
+    scrambleTimerRef.current = setInterval(() => {
       const elapsed = performance.now() - start
-      const next = RANDOM_LETTERS.map((target, i) => {
-        const settledAt = (i + 1) * settleStep
-        return elapsed >= settledAt ? target : randomGlyph()
-      })
-      setDisplay(next)
+      const next = Array.from({ length: RANDOM_COUNT }, () =>
+        RANDOM_LETTERS.map((target, i) => {
+          const settledAt = (i + 1) * settleStep
+          return elapsed >= settledAt ? target : randomGlyph()
+        }),
+      )
+      setDisplays(next)
 
       if (elapsed >= SCRAMBLE_DURATION) {
-        clearInterval(timerRef.current)
-        timerRef.current = null
-        setDisplay(RANDOM_LETTERS)
+        clearInterval(scrambleTimerRef.current)
+        scrambleTimerRef.current = null
+        setDisplays(freshDisplays())
         setScrambling(false)
         onRandom()
       }
     }, SCRAMBLE_TICK)
   }
 
+  useEffect(() => {
+    return () => {
+      if (scrambleTimerRef.current) clearInterval(scrambleTimerRef.current)
+    }
+  }, [])
+
+  // Idle micro-glitch loop — paused while click-scramble is running.
+  useEffect(() => {
+    if (scrambling) return
+
+    let cancelled = false
+    let pending = null
+
+    const scheduleNext = () => {
+      if (cancelled) return
+      const delay = GLITCH_DELAY_MIN + Math.random() * (GLITCH_DELAY_MAX - GLITCH_DELAY_MIN)
+      pending = setTimeout(runGlitch, delay)
+    }
+
+    const runGlitch = () => {
+      if (cancelled) return
+      const which = Math.floor(Math.random() * RANDOM_COUNT)
+      const count = 1 + Math.floor(Math.random() * 2)
+      const positions = new Set()
+      while (positions.size < count) {
+        positions.add(Math.floor(Math.random() * RANDOM_LETTERS.length))
+      }
+      setDisplays((prev) =>
+        prev.map((d, i) =>
+          i === which
+            ? RANDOM_LETTERS.map((c, j) => (positions.has(j) ? randomGlyph() : c))
+            : d,
+        ),
+      )
+
+      const hold = GLITCH_HOLD_MIN + Math.random() * (GLITCH_HOLD_MAX - GLITCH_HOLD_MIN)
+      pending = setTimeout(() => {
+        if (cancelled) return
+        setDisplays((prev) =>
+          prev.map((d, i) => (i === which ? [...RANDOM_LETTERS] : d)),
+        )
+        scheduleNext()
+      }, hold)
+    }
+
+    scheduleNext()
+
+    return () => {
+      cancelled = true
+      if (pending) clearTimeout(pending)
+    }
+  }, [scrambling])
+
   return (
     <div className="app__landing">
-      <h1 className="landing__title">
-        <span>Random</span>
-        <span>Genre</span>
-        <span>Explorer</span>
-      </h1>
+      <h1 className="landing__title">random genre explorer</h1>
 
-      <button
-        type="button"
-        className="landing__random"
-        onClick={handleClick}
-        aria-label="Random genre"
-      >
-        {display.map((char, i) => (
-          <span key={i} className="landing__random-letter">{char}</span>
+      <div className="landing__randoms">
+        {displays.map((display, i) => (
+          <button
+            key={i}
+            type="button"
+            className={`landing__random landing__random--${RANDOM_ALIGNMENTS[i]}`}
+            onClick={handleClick}
+            aria-label={`Random genre, option ${i + 1} of ${RANDOM_COUNT}`}
+          >
+            {display.map((char, j) => (
+              <span key={j} className="landing__random-letter">{char}</span>
+            ))}
+          </button>
         ))}
-      </button>
+      </div>
 
       <DiscoveryCounter genre={null} total={total} compact />
     </div>
