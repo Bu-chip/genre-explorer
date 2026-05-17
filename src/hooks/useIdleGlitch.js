@@ -9,6 +9,10 @@ export function useIdleGlitch(baseText, options = {}) {
     holdMin = 200,
     holdMax = 300,
     letterCount = 2,
+    letterCountMin,
+    letterCountMax,
+    chainProbability = 0,
+    chainDelay = 100,
   } = options
 
   const [overlay, setOverlay] = useState(null)
@@ -19,15 +23,23 @@ export function useIdleGlitch(baseText, options = {}) {
     let cancelled = false
     let pending = null
 
-    const scheduleNext = () => {
-      const delay = delayMin + Math.random() * (delayMax - delayMin)
-      pending = setTimeout(runGlitch, delay)
+    const pickCount = () => {
+      if (letterCountMin != null && letterCountMax != null) {
+        const range = letterCountMax - letterCountMin
+        return letterCountMin + Math.floor(Math.random() * (range + 1))
+      }
+      return letterCount
     }
 
-    const runGlitch = () => {
+    const scheduleNext = () => {
+      const delay = delayMin + Math.random() * (delayMax - delayMin)
+      pending = setTimeout(() => runGlitch(false), delay)
+    }
+
+    const runGlitch = (isChained) => {
       if (cancelled) return
+      const count = Math.min(pickCount(), baseText.length)
       const positions = new Set()
-      const count = Math.min(letterCount, baseText.length)
       while (positions.size < count) {
         positions.add(Math.floor(Math.random() * baseText.length))
       }
@@ -39,7 +51,12 @@ export function useIdleGlitch(baseText, options = {}) {
       pending = setTimeout(() => {
         if (cancelled) return
         setOverlay(null)
-        scheduleNext()
+
+        if (!isChained && chainProbability > 0 && Math.random() < chainProbability) {
+          pending = setTimeout(() => runGlitch(true), chainDelay)
+        } else {
+          scheduleNext()
+        }
       }, hold)
     }
 
@@ -50,7 +67,19 @@ export function useIdleGlitch(baseText, options = {}) {
       if (pending) clearTimeout(pending)
       setOverlay(null)
     }
-  }, [baseText, paused, delayMin, delayMax, holdMin, holdMax, letterCount])
+  }, [
+    baseText,
+    paused,
+    delayMin,
+    delayMax,
+    holdMin,
+    holdMax,
+    letterCount,
+    letterCountMin,
+    letterCountMax,
+    chainProbability,
+    chainDelay,
+  ])
 
   return useMemo(() => {
     if (!baseText) return []

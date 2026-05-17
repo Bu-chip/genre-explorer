@@ -17,11 +17,14 @@ export function ContextPhrase({ phrase, spinning }) {
 
   const display = useIdleGlitch(phrase || '', {
     paused: !ready || spinning,
-    delayMin: 5000,
-    delayMax: 8000,
-    holdMin: 200,
-    holdMax: 300,
-    letterCount: 2,
+    delayMin: 2000,
+    delayMax: 4000,
+    holdMin: 400,
+    holdMax: 600,
+    letterCountMin: 3,
+    letterCountMax: 4,
+    chainProbability: 0.5,
+    chainDelay: 100,
   })
 
   if (spinning) {

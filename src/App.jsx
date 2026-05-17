@@ -35,8 +35,8 @@ const GLITCH_HOLD_MIN = 200
 const GLITCH_HOLD_MAX = 300
 const GLITCH_LETTER_COUNT = 3
 
-const MARQUEE_TEXT = 'random · random · random · genre explorer · '.repeat(14)
-const HEADER_MARQUEE_TEXT = 'random genre explorer · '.repeat(20)
+const MARQUEE_TEXT = 'random · random · random · genre explorer · '.repeat(20)
+const HEADER_MARQUEE_TEXT = 'random genre explorer · '.repeat(32)
 
 function freshDisplays() {
   return Array.from({ length: RANDOM_COUNT }, () => [...RANDOM_LETTERS])
