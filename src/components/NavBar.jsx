@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { getGenresByRegion, REGION_NAMES } from '../utils/regions'
 import { getRarityScore } from '../utils/rarityScore'
+import { useIdleGlitch } from '../hooks/useIdleGlitch'
 import './NavBar.css'
 
 const MAX_RESULTS = 8
@@ -30,44 +31,6 @@ function fuzzyMatch(genres, query) {
   return scored.slice(0, MAX_RESULTS).map((s) => s.genre)
 }
 
-function DiceIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="3" y="3" width="18" height="18" />
-      <circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none" />
-      <circle cx="15.5" cy="8.5" r="1.2" fill="currentColor" stroke="none" />
-      <circle cx="8.5" cy="15.5" r="1.2" fill="currentColor" stroke="none" />
-      <circle cx="15.5" cy="15.5" r="1.2" fill="currentColor" stroke="none" />
-      <circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none" />
-    </svg>
-  )
-}
-
-function SearchIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="11" cy="11" r="7" />
-      <line x1="16.5" y1="16.5" x2="21" y2="21" />
-    </svg>
-  )
-}
-
-function HeartIcon({ filled }) {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill={filled ? 'currentColor' : 'none'}
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-    >
-      <path d="M8 13.5 L2.2 7.8 A3.2 3.2 0 0 1 6.7 3.3 L8 4.6 L9.3 3.3 A3.2 3.2 0 0 1 13.8 7.8 Z" />
-    </svg>
-  )
-}
-
 export function NavBar({ genres, onRandom, onSelect, disabled, currentGenre, favorites, onClearFavorites }) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [regionOpen, setRegionOpen] = useState(false)
@@ -83,6 +46,8 @@ export function NavBar({ genres, onRandom, onSelect, disabled, currentGenre, fav
   const searchRef = useRef(null)
   const inputRef = useRef(null)
   const favoritesRef = useRef(null)
+
+  const randomDisplay = useIdleGlitch('RANDOM', { paused: disabled })
 
   const updateResults = useCallback(
     (q) => {
@@ -175,7 +140,6 @@ export function NavBar({ genres, onRandom, onSelect, disabled, currentGenre, fav
     [genres, onSelect, onRandom],
   )
 
-  // Outside click: close dropdown, search and favorites
   useEffect(() => {
     const handler = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -226,28 +190,31 @@ export function NavBar({ genres, onRandom, onSelect, disabled, currentGenre, fav
 
   return (
     <nav className="nav-bar" ref={barRef}>
-      {/* Left: Random */}
-      <div className="nav-bar__section" ref={dropdownRef}>
+      <div className="nav-bar__random-row" ref={dropdownRef}>
         <button
-          className="nav-bar__action"
+          className="nav-bar__random"
           onClick={onRandom}
           disabled={disabled}
+          aria-label="Random genre"
         >
-          <DiceIcon />
-          <span>Random</span>
+          <span aria-hidden="true" className="nav-bar__random-text">
+            {randomDisplay.map((char, i) => (
+              <span key={i} className="nav-bar__random-letter">{char}</span>
+            ))}
+          </span>
         </button>
-        <span
+        <button
+          type="button"
           className="nav-bar__chevron"
           onClick={() => { if (!disabled) setDropdownOpen((o) => !o) }}
-          role="button"
-          tabIndex={disabled ? -1 : 0}
+          disabled={disabled}
           aria-label="Random options"
           aria-expanded={dropdownOpen}
         >
-          <svg width="8" height="8" viewBox="0 0 10 10">
+          <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
             <path d="M2 3.5 L5 7 L8 3.5" stroke="currentColor" strokeWidth="1.4" fill="none" />
           </svg>
-        </span>
+        </button>
 
         <div className={`nav-bar__dropdown ${dropdownOpen ? 'nav-bar__dropdown--open' : ''}`}>
           {DROPDOWN_OPTIONS.map((opt) => (
@@ -258,7 +225,7 @@ export function NavBar({ genres, onRandom, onSelect, disabled, currentGenre, fav
               >
                 {opt.label}
                 {opt.id === 'region' && (
-                  <span className="nav-bar__submenu-arrow">{regionOpen ? '\u2039' : '\u203A'}</span>
+                  <span className="nav-bar__submenu-arrow">{regionOpen ? '‹' : '›'}</span>
                 )}
               </button>
               {opt.id === 'region' && regionOpen && (
@@ -279,103 +246,98 @@ export function NavBar({ genres, onRandom, onSelect, disabled, currentGenre, fav
         </div>
       </div>
 
-      {/* Separator */}
-      <div className="nav-bar__separator" />
+      <div className="nav-bar__utilities">
+        <div className="nav-bar__utility" ref={searchRef}>
+          {searchActive ? (
+            <div className="nav-bar__search-field">
+              <input
+                ref={inputRef}
+                className="nav-bar__search-input"
+                type="text"
+                value={query}
+                onChange={(e) => { setQuery(e.target.value); updateResults(e.target.value) }}
+                onKeyDown={handleSearchKeyDown}
+                placeholder="search genre..."
+                spellCheck={false}
+                autoComplete="off"
+                aria-label="Search genres"
+              />
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="nav-bar__utility-action"
+              onClick={expandSearch}
+              aria-label="Search genres"
+            >
+              search
+            </button>
+          )}
 
-      {/* Right: Search */}
-      <div className="nav-bar__section" ref={searchRef}>
-        {searchActive ? (
-          <div className="nav-bar__search-field">
-            <SearchIcon />
-            <input
-              ref={inputRef}
-              className="nav-bar__search-input"
-              type="text"
-              value={query}
-              onChange={(e) => { setQuery(e.target.value); updateResults(e.target.value) }}
-              onKeyDown={handleSearchKeyDown}
-              placeholder="search genre..."
-              spellCheck={false}
-              autoComplete="off"
-            />
-          </div>
-        ) : (
-          <button className="nav-bar__action" onClick={expandSearch}>
-            <SearchIcon />
-            <span>Search</span>
-          </button>
-        )}
-
-        {resultsOpen && searchActive && (
-          <ul className="nav-bar__results">
-            {results.map((genre, i) => (
-              <li
-                key={genre.slug}
-                className={`nav-bar__result ${i === activeIndex ? 'nav-bar__result--active' : ''}`}
-                onMouseDown={() => selectGenre(genre)}
-                onMouseEnter={() => setActiveIndex(i)}
-              >
-                <span className="nav-bar__result-name">{genre.name}</span>
-                <span className="nav-bar__result-dot" style={{ backgroundColor: genre.color }} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {/* Separator */}
-      <div className="nav-bar__separator" />
-
-      {/* Favorites */}
-      <div className="nav-bar__section" ref={favoritesRef}>
-        <button
-          className="nav-bar__action"
-          onClick={() => setFavoritesOpen((o) => !o)}
-          aria-expanded={favoritesOpen}
-          aria-label="Favorites"
-        >
-          <HeartIcon filled={favoriteGenres.length > 0} />
-          <span>
-            Saved{favoriteGenres.length > 0 ? ` (${favoriteGenres.length})` : ''}
-          </span>
-        </button>
-
-        {favoritesOpen && (
-          <div className="nav-bar__favorites">
-            {favoriteGenres.length === 0 ? (
-              <p className="nav-bar__favorites-empty">
-                no saved genres yet. tap save on any genre to keep it here.
-              </p>
-            ) : (
-              <>
-                <ul className="nav-bar__favorites-list">
-                  {favoriteGenres.map((genre) => (
-                    <li
-                      key={genre.slug}
-                      className="nav-bar__result"
-                      onMouseDown={() => selectFavorite(genre)}
-                    >
-                      <span className="nav-bar__result-name">{genre.name}</span>
-                      <span
-                        className="nav-bar__result-dot"
-                        style={{ backgroundColor: genre.color }}
-                      />
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  type="button"
-                  className="nav-bar__favorites-clear"
-                  onClick={handleClearFavorites}
+          {resultsOpen && searchActive && (
+            <ul className="nav-bar__results">
+              {results.map((genre, i) => (
+                <li
+                  key={genre.slug}
+                  className={`nav-bar__result ${i === activeIndex ? 'nav-bar__result--active' : ''}`}
+                  onMouseDown={() => selectGenre(genre)}
+                  onMouseEnter={() => setActiveIndex(i)}
                 >
-                  clear all
-                </button>
-              </>
-            )}
-          </div>
-        )}
-      </div>
+                  <span className="nav-bar__result-name">{genre.name}</span>
+                  <span className="nav-bar__result-dot" style={{ backgroundColor: genre.color }} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
+        <div className="nav-bar__utility" ref={favoritesRef}>
+          <button
+            type="button"
+            className="nav-bar__utility-action"
+            onClick={() => setFavoritesOpen((o) => !o)}
+            aria-expanded={favoritesOpen}
+            aria-label="View saved genres"
+          >
+            saved{favoriteGenres.length > 0 ? ` (${favoriteGenres.length})` : ''}
+          </button>
+
+          {favoritesOpen && (
+            <div className="nav-bar__favorites">
+              {favoriteGenres.length === 0 ? (
+                <p className="nav-bar__favorites-empty">
+                  no saved genres yet. tap save on any genre to keep it here.
+                </p>
+              ) : (
+                <>
+                  <ul className="nav-bar__favorites-list">
+                    {favoriteGenres.map((genre) => (
+                      <li
+                        key={genre.slug}
+                        className="nav-bar__result"
+                        onMouseDown={() => selectFavorite(genre)}
+                      >
+                        <span className="nav-bar__result-name">{genre.name}</span>
+                        <span
+                          className="nav-bar__result-dot"
+                          style={{ backgroundColor: genre.color }}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    type="button"
+                    className="nav-bar__favorites-clear"
+                    onClick={handleClearFavorites}
+                  >
+                    clear all
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     </nav>
   )
 }
