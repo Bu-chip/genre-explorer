@@ -1,29 +1,31 @@
 .fav-btn {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--gray-600);
+  justify-content: center;
   background: none;
   border: none;
-  padding: var(--space-2) var(--space-3);
+  color: var(--qcr-purple);
+  padding: var(--space-2);
+  line-height: 0;
   cursor: pointer;
-  transition: color 150ms ease;
+  transition: opacity 150ms ease, color 150ms ease;
 }
 
 .fav-btn:hover {
-  color: var(--qcr-purple);
-  opacity: 0.6;
+  opacity: 0.75;
+}
+
+.fav-btn:focus-visible {
+  outline: 1px solid var(--qcr-purple);
+  outline-offset: var(--space-1);
 }
 
 .fav-btn--active {
   color: var(--qcr-lime);
 }
 
-.fav-btn--active:hover {
-  color: var(--qcr-lime);
-  opacity: 0.7;
+.fav-btn--active:focus-visible {
+  outline-color: var(--qcr-lime);
 }
 
 .fav-btn__icon {

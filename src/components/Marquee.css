@@ -1,5 +1,7 @@
 .marquee {
   width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
   overflow: hidden;
   font-family: var(--font-mono);
   font-weight: var(--font-weight-regular);
@@ -30,14 +32,6 @@
 @keyframes marquee-scroll {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
-}
-
-/* Header variant: anchored to top of the genre view, breaks out of the
-   760px max-width container so it spans the viewport edge to edge. */
-.marquee--header {
-  margin-left: calc(-1 * var(--space-5));
-  margin-right: calc(-1 * var(--space-5));
-  width: 100vw;
 }
 
 .marquee--header .marquee__track {
