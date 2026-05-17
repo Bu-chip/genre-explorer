@@ -2,6 +2,7 @@
   position: relative;
   display: inline-flex;
   flex-shrink: 0;
+  vertical-align: middle;
 }
 
 .track-info__button {
@@ -30,9 +31,11 @@
 }
 
 .track-info__popover {
+  display: block;
   position: absolute;
   bottom: calc(100% + var(--space-2));
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
   width: max-content;
   max-width: min(280px, calc(100vw - var(--space-5) * 2));
   background: var(--gray-800);
