@@ -1,0 +1,48 @@
+.track-info {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.track-info__button {
+  position: relative;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: var(--gray-500);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 150ms ease;
+}
+
+/* Expand tap target without affecting layout */
+.track-info__button::before {
+  content: '';
+  position: absolute;
+  inset: calc(-1 * var(--space-2));
+}
+
+.track-info__button:hover {
+  color: var(--gray-300);
+}
+
+.track-info__popover {
+  position: absolute;
+  bottom: calc(100% + var(--space-2));
+  right: 0;
+  width: max-content;
+  max-width: min(280px, calc(100vw - var(--space-5) * 2));
+  background: var(--gray-800);
+  border: 1px solid var(--gray-700);
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1.6;
+  color: var(--gray-300);
+  text-align: left;
+  white-space: normal;
+  z-index: 20;
+}

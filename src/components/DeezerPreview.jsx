@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { TrackInfoPopover } from './TrackInfoPopover'
 import './DeezerPreview.css'
 
 const PROXY = 'https://corsproxy.io/?'
@@ -207,7 +208,10 @@ export function DeezerPreview({ artist, track }) {
         </button>
         <div className="deezer-preview__info">
           <p className="deezer-preview__track">
-            {data.artist} &mdash; {data.title}
+            <span className="deezer-preview__track-text">
+              {data.artist} &mdash; {data.title}
+            </span>
+            <TrackInfoPopover />
           </p>
           <div className="deezer-preview__bar" onClick={handleBarClick}>
             <div
