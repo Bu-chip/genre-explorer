@@ -1,9 +1,9 @@
 .nav-bar {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: center;
-  gap: var(--space-4);
+  column-gap: var(--space-2);
+  width: 100%;
   margin-bottom: var(--space-5);
 }
 
@@ -11,8 +11,10 @@
   position: relative;
   display: flex;
   align-items: center;
-  flex: 0 0 auto;
 }
+
+.nav-bar__slot--left  { justify-self: end; }
+.nav-bar__slot--right { justify-self: start; }
 
 /* ===== Icon buttons (search, star) ===== */
 
@@ -54,7 +56,15 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
+}
+
+/* Mirror the chevron's layout width on the left so the RANDOM word
+   itself (not RANDOM+chevron) lands dead-centered on the viewport. */
+.nav-bar__random-row::before {
+  content: '';
+  display: inline-block;
   flex: 0 0 auto;
+  width: calc(var(--space-1) * 2 + 9px);
 }
 
 .nav-bar__random {
@@ -106,24 +116,37 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--gray-500);
+  color: var(--qcr-purple);
   padding: var(--space-1);
   line-height: 0;
-  transition: color 0.15s;
+  transition: opacity 0.15s, color 0.15s;
+  animation: nav-bar-chevron-breathe 2s ease-in-out infinite;
 }
 
 .nav-bar__chevron:hover:not(:disabled) {
-  color: var(--gray-300);
+  opacity: 0.75;
+  animation: none;
 }
 
 .nav-bar__chevron:disabled {
   cursor: default;
   opacity: 0.4;
+  animation: none;
 }
 
 .nav-bar__chevron:focus-visible {
-  outline: 1px solid var(--gray-500);
+  outline: 1px solid var(--qcr-purple);
   outline-offset: var(--space-1);
+  animation: none;
+}
+
+@keyframes nav-bar-chevron-breathe {
+  0%, 100% { opacity: 0.45; }
+  50%      { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-bar__chevron { animation: none; }
 }
 
 /* ===== Dropdown — centered below RANDOM ===== */
@@ -332,7 +355,7 @@
 
 @media (max-width: 480px) {
   .nav-bar {
-    gap: var(--space-4);
+    column-gap: var(--space-2);
   }
   .nav-bar__icon-btn {
     padding: var(--space-2);
