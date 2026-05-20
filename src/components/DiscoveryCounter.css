@@ -8,6 +8,6 @@
 
 .discovery-counter--compact {
   display: block;
-  margin: var(--space-5) 0;
+  margin: var(--space-6) 0 0;
   white-space: nowrap;
 }

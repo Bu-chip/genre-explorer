@@ -42,7 +42,7 @@ function freshDisplays() {
   return Array.from({ length: RANDOM_COUNT }, () => [...RANDOM_LETTERS])
 }
 
-function Landing({ onRandom, total }) {
+function Landing({ onRandom }) {
   const [displays, setDisplays] = useState(freshDisplays)
   const [scrambling, setScrambling] = useState(false)
   const scrambleTimerRef = useRef(null)
@@ -149,8 +149,6 @@ function Landing({ onRandom, total }) {
       </div>
 
       <Marquee direction="ltr" text={MARQUEE_TEXT} className="marquee--landing" />
-
-      <DiscoveryCounter genre={null} total={total} compact />
     </div>
   )
 }
@@ -391,7 +389,7 @@ function App() {
           </section>
         </>
       ) : (
-        <Landing onRandom={handleRandom} total={genres.length} />
+        <Landing onRandom={handleRandom} />
       )}
     </div>
   )

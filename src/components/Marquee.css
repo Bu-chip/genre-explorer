@@ -17,7 +17,7 @@
 .marquee__track {
   display: flex;
   width: max-content;
-  animation: marquee-scroll 50s linear infinite;
+  animation: marquee-scroll 80s linear infinite;
   will-change: transform;
 }
 
@@ -32,8 +32,4 @@
 @keyframes marquee-scroll {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
-}
-
-.marquee--header .marquee__track {
-  animation-duration: 45s;
 }

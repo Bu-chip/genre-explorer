@@ -30,6 +30,8 @@ export function DiscoveryCounter({ genre, total, compact }) {
     }
   }, [genre?.slug])
 
+  if (!genre) return null
+
   if (compact) {
     return (
       <span className="discovery-counter discovery-counter--compact">
