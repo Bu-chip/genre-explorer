@@ -334,20 +334,23 @@ function App() {
                 <NavBar genres={genres} onRandom={handleRandom} onSelect={handleResult} disabled={spinning} currentGenre={selectedGenre} favorites={favorites} onClearFavorites={clearFavorites} />
               </div>
               <div className="discovery-content">
-                <GenreName genre={selectedGenre} displayName={spinDisplay} />
-                <ContextPhrase phrase={contextPhrase} spinning={!!spinDisplay} />
-                <ListenLinks name={selectedGenre.name} slug={selectedGenre.slug} />
-                <div className="discovery-actions">
-                  <FavoriteButton
-                    active={isFavorite(selectedGenre.slug)}
-                    onToggle={() => toggleFavorite(selectedGenre.slug)}
-                  />
-                  <ShareButton genre={selectedGenre} />
+                <div className="discovery-block discovery-block--letras">
+                  <GenreName genre={selectedGenre} displayName={spinDisplay} />
+                  <ContextPhrase phrase={contextPhrase} spinning={!!spinDisplay} />
+                  <DiscoveryCounter genre={selectedGenre} total={genres.length} compact />
+                </div>
+                <div className="discovery-block discovery-block--iconos">
+                  <ListenLinks name={selectedGenre.name} slug={selectedGenre.slug} />
+                  <div className="discovery-actions">
+                    <FavoriteButton
+                      active={isFavorite(selectedGenre.slug)}
+                      onToggle={() => toggleFavorite(selectedGenre.slug)}
+                    />
+                    <ShareButton genre={selectedGenre} />
+                  </div>
                 </div>
               </div>
             </div>
-
-            <DiscoveryCounter genre={selectedGenre} total={genres.length} compact />
 
             <div className="discovery-preview">
               <DeezerPreview

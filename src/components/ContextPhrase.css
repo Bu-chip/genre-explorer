@@ -1,7 +1,7 @@
 .context-phrase {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  color: var(--gray-500);
+  color: color-mix(in srgb, var(--qcr-lime) 30%, transparent);
   text-transform: lowercase;
   text-align: center;
   letter-spacing: 0.04em;
