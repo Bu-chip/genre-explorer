@@ -33,7 +33,7 @@ export function DiscoveryCounter({ genre, total, compact }) {
   if (compact) {
     return (
       <span className="discovery-counter discovery-counter--compact">
-        {count.toLocaleString()} / {total.toLocaleString()}
+        genre {count.toLocaleString()} of {total.toLocaleString()}
       </span>
     )
   }
