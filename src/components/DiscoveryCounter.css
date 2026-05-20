@@ -10,4 +10,5 @@
   display: block;
   margin: var(--space-6) 0 0;
   white-space: nowrap;
+  color: color-mix(in srgb, var(--qcr-lime) 30%, transparent);
 }

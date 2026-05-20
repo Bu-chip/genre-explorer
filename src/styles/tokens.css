@@ -24,6 +24,14 @@
   --space-8: 64px;
   --space-9: 96px;
 
+  /* Rhythm — block-based vertical rhythm for the genre-view header.
+     D = base distance (between major sections).
+     D/2 = inter-block gap (between blocks within the header).
+     D/3 = intra-block gap (between lines within a block). */
+  --rhythm-D: clamp(24px, 6vh, 80px);
+  --rhythm-D-half: calc(var(--rhythm-D) / 2);
+  --rhythm-D-third: calc(var(--rhythm-D) / 3);
+
   /* Typography — families */
   --font-display: 'Barlow Condensed', sans-serif;
   --font-body: 'Barlow', sans-serif;
