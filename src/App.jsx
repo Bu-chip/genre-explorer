@@ -334,12 +334,12 @@ function App() {
                 <NavBar genres={genres} onRandom={handleRandom} onSelect={handleResult} disabled={spinning} currentGenre={selectedGenre} favorites={favorites} onClearFavorites={clearFavorites} />
               </div>
               <div className="discovery-content">
-                <div className="discovery-block discovery-block--letras">
-                  <GenreName genre={selectedGenre} displayName={spinDisplay} />
+                <GenreName genre={selectedGenre} displayName={spinDisplay} />
+                <div className="discovery-block discovery-block--meta">
                   <ContextPhrase phrase={contextPhrase} spinning={!!spinDisplay} />
                   <DiscoveryCounter genre={selectedGenre} total={genres.length} compact />
                 </div>
-                <div className="discovery-block discovery-block--iconos">
+                <div className="discovery-block discovery-block--icons">
                   <ListenLinks name={selectedGenre.name} slug={selectedGenre.slug} />
                   <div className="discovery-actions">
                     <FavoriteButton
