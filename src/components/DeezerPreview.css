@@ -8,7 +8,7 @@
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   color: color-mix(in srgb, var(--qcr-lime) 30%, transparent);
-  margin: 0 0 var(--space-3);
+  margin: 0 0 var(--rhythm-D-third);
 }
 
 .deezer-preview {

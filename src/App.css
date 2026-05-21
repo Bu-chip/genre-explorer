@@ -113,7 +113,7 @@
   z-index: 1;
 }
 
-/* Unified header: marquee → nav → block A (letras) → block B (iconos).
+/* Unified header: marquee → nav → three visual groups (title / meta / icons).
    Children own their own vertical spacing — no uniform gap — so the rhythm
    can step between three tiers (D / D/2 / D/3). */
 .discovery-header {
@@ -173,7 +173,7 @@
   width: 100%;
   max-width: 360px;
   min-width: 0;
-  margin: var(--rhythm-D-half) auto 0;
+  margin: var(--rhythm-D) auto 0;
   text-align: left;
 }
 
