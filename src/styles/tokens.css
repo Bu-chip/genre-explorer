@@ -28,7 +28,7 @@
      D = base distance (between major sections).
      D/2 = inter-block gap (between blocks within the header).
      D/3 = intra-block gap (between lines within a block). */
-  --rhythm-D: clamp(24px, 6vh, 80px);
+  --rhythm-D: clamp(34px, 8vh, 120px);
   --rhythm-D-half: calc(var(--rhythm-D) / 2);
   --rhythm-D-third: calc(var(--rhythm-D) / 3);
 
