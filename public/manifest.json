@@ -1,7 +1,7 @@
 {
   "name": "Random Genre Explorer",
   "short_name": "RGE",
-  "start_url": "/genre-explorer/",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#0d0f12",
   "theme_color": "#0d0f12",
