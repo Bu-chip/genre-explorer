@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
+import { deezerProxyUrl } from '../config'
 
 const LASTFM_KEY = import.meta.env.VITE_LASTFM_API_KEY
 const LASTFM_BASE = 'https://ws.audioscrobbler.com/2.0/'
-const PROXY = 'https://corsproxy.io/?'
 const DEEZER_SEARCH = 'https://api.deezer.com/search'
 const ITUNES_SEARCH = 'https://itunes.apple.com/search'
 
@@ -47,7 +47,7 @@ async function fetchDeezerByGenre(genre) {
   const url = `${DEEZER_SEARCH}?q=${encodeURIComponent(genre)}&limit=5`
   // Deezer is usually not CORS-friendly from the browser; try direct, then proxy.
   let data = await fetchJson(url)
-  if (!data) data = await fetchJson(`${PROXY}${encodeURIComponent(url)}`)
+  if (!data) data = await fetchJson(deezerProxyUrl(url))
   const items = data?.data
   if (!Array.isArray(items)) return null
   for (const t of items) {

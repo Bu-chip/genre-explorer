@@ -1,0 +1,11 @@
+name = "deezer-proxy"
+main = "src/index.js"
+compatibility_date = "2026-06-06"
+
+# Optional: serve the Worker from a custom subdomain on your own zone instead of
+# the default *.workers.dev URL. Uncomment and adjust if you set this up in
+# Cloudflare (requires the zone to be active on your account).
+#
+# routes = [
+#   { pattern = "deezer-proxy.queimadacircuitrecords.com", custom_domain = true }
+# ]
