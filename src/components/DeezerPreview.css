@@ -29,6 +29,12 @@
 }
 
 .deezer-preview__play {
+  /* Explicit box: WebKit resolves the intrinsic size of an attribute-sized
+     svg inside an unsized flex-item button to 0, so the button collapsed and
+     was invisible on Safari/iPad (Chromium sizes it fine). Same family of
+     bug as the cover's display: block fix below. */
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
   background: none;
   border: none;
@@ -39,6 +45,12 @@
   align-items: center;
   justify-content: center;
   transition: color 150ms ease;
+}
+
+.deezer-preview__play svg {
+  display: block;
+  width: 24px;
+  height: 24px;
 }
 
 .deezer-preview__play:hover {

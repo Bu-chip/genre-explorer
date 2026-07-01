@@ -4,6 +4,7 @@ import { deezerProxyUrl } from '../config'
 import './DeezerPreview.css'
 
 const DEEZER_SEARCH = 'https://api.deezer.com/search'
+const FADE_IN_MS = 400
 
 async function fetchDeezer(artist, track) {
   const query = `${artist} ${track}`
@@ -93,33 +94,40 @@ function Label() {
   )
 }
 
-export function DeezerPreview({ artist, track }) {
+export function DeezerPreview({ artist, track, preview, cover }) {
   const [data, setData] = useState(null)
   const [notFound, setNotFound] = useState(false)
   const [playing, setPlaying] = useState(false)
   const [progress, setProgress] = useState(0)
   const audioRef = useRef(null)
   const rafRef = useRef(null)
+  const fadeRafRef = useRef(null)
 
-  // Fetch Deezer data
+  // Resolve the preview: reuse the one the cascade already found (Deezer hit
+  // in useTrack), or search Deezer by artist + track (Last.fm / iTunes hits
+  // only carry names, no preview URL).
   useEffect(() => {
     if (!artist || !track) return
 
     let cancelled = false
 
-    fetchDeezer(artist, track).then((result) => {
-      if (cancelled) return
-      if (result?.preview) {
-        setData({
-          preview: result.preview,
-          cover: result.album?.cover_medium,
-          artist: result.artist?.name || artist,
-          title: result.title || track,
-        })
-      } else {
-        setNotFound(true)
-      }
-    })
+    if (preview) {
+      setData({ preview, cover, artist, title: track })
+    } else {
+      fetchDeezer(artist, track).then((result) => {
+        if (cancelled) return
+        if (result?.preview) {
+          setData({
+            preview: result.preview,
+            cover: result.album?.cover_medium,
+            artist: result.artist?.name || artist,
+            title: result.title || track,
+          })
+        } else {
+          setNotFound(true)
+        }
+      })
+    }
 
     return () => {
       cancelled = true
@@ -128,13 +136,36 @@ export function DeezerPreview({ artist, track }) {
       setPlaying(false)
       setProgress(0)
     }
-  }, [artist, track])
+  }, [artist, track, preview, cover])
+
+  // Ramp volume 0 → 1 so previews don't slam in at full volume. On iOS
+  // Safari, setting .volume is a no-op (system-controlled), which just means
+  // full volume from the start — same as before.
+  const fadeIn = useCallback((audio) => {
+    if (fadeRafRef.current) cancelAnimationFrame(fadeRafRef.current)
+    audio.volume = 0
+    const start = performance.now()
+    const step = (now) => {
+      const t = Math.min((now - start) / FADE_IN_MS, 1)
+      audio.volume = t
+      fadeRafRef.current = t < 1 ? requestAnimationFrame(step) : null
+    }
+    fadeRafRef.current = requestAnimationFrame(step)
+  }, [])
+
+  const cancelFade = useCallback(() => {
+    if (fadeRafRef.current) {
+      cancelAnimationFrame(fadeRafRef.current)
+      fadeRafRef.current = null
+    }
+  }, [])
 
   // Setup audio element, autoplay when a new preview URL arrives
   useEffect(() => {
     if (!data?.preview) return
 
     const audio = new Audio(data.preview)
+    audio.volume = 0
     audioRef.current = audio
 
     const onEnded = () => {
@@ -144,16 +175,21 @@ export function DeezerPreview({ artist, track }) {
     audio.addEventListener('ended', onEnded)
 
     // Autoplay; stay silently paused if the browser blocks it (e.g. Safari iOS
-    // before user gesture).
-    audio.play().then(() => setPlaying(true)).catch(() => {})
+    // before user gesture). fadeIn resets volume to 0 on every play, so a
+    // blocked autoplay needs no volume cleanup here.
+    audio.play().then(() => {
+      setPlaying(true)
+      fadeIn(audio)
+    }).catch(() => {})
 
     return () => {
       audio.removeEventListener('ended', onEnded)
+      cancelFade()
       audio.pause()
       audioRef.current = null
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
     }
-  }, [data?.preview])
+  }, [data?.preview, fadeIn, cancelFade])
 
   // Animate progress bar
   useEffect(() => {
@@ -181,12 +217,16 @@ export function DeezerPreview({ artist, track }) {
     if (!audio) return
 
     if (playing) {
+      cancelFade()
       audio.pause()
       setPlaying(false)
     } else {
-      audio.play().then(() => setPlaying(true)).catch(() => {})
+      audio.play().then(() => {
+        setPlaying(true)
+        fadeIn(audio)
+      }).catch(() => {})
     }
-  }, [playing])
+  }, [playing, fadeIn, cancelFade])
 
   const handleBarClick = useCallback((e) => {
     const audio = audioRef.current
