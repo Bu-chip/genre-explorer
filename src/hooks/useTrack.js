@@ -63,7 +63,14 @@ async function fetchDeezerByGenre(genre) {
   if (!Array.isArray(items)) return null
   for (const t of items) {
     if (isMusical(t.title)) {
-      return { artist: t.artist?.name, title: t.title }
+      // Deezer search results already carry the 30s preview URL and cover;
+      // pass them along so DeezerPreview can skip its own Deezer search.
+      return {
+        artist: t.artist?.name,
+        title: t.title,
+        preview: t.preview || undefined,
+        cover: t.album?.cover_medium || undefined,
+      }
     }
   }
   return null

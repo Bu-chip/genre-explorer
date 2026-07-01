@@ -356,6 +356,8 @@ function App() {
               <DeezerPreview
                 artist={track?.artist}
                 track={track?.title}
+                preview={track?.preview}
+                cover={track?.cover}
               />
             </div>
 
