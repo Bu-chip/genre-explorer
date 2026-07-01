@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
+import { deezerProxyUrl } from '../config'
 
 const LASTFM_KEY = import.meta.env.VITE_LASTFM_API_KEY
 const LASTFM_BASE = 'https://ws.audioscrobbler.com/2.0/'
-const PROXY = 'https://corsproxy.io/?'
 const DEEZER_SEARCH = 'https://api.deezer.com/search'
 const ITUNES_SEARCH = 'https://itunes.apple.com/search'
 
@@ -12,12 +12,22 @@ function isMusical(title) {
   return !!title && !NON_MUSIC.test(title)
 }
 
-async function fetchJson(url) {
+// `warn` logs failures to the console. Leave it off for requests that are
+// expected to fail, like direct (un-proxied) Deezer calls blocked by CORS.
+async function fetchJson(url, { warn = false } = {}) {
   try {
     const res = await fetch(url)
-    if (!res.ok) return null
+    if (!res.ok) {
+      if (warn) {
+        console.warn(`[useTrack] fetch responded ${res.status} ${res.statusText} for ${url}`)
+      }
+      return null
+    }
     return await res.json()
-  } catch {
+  } catch (err) {
+    if (warn) {
+      console.warn(`[useTrack] fetch failed for ${url}:`, err)
+    }
     return null
   }
 }
@@ -32,7 +42,7 @@ async function fetchLastfmTopTrack(genre) {
     format: 'json',
     limit: '5',
   })
-  const data = await fetchJson(url.toString())
+  const data = await fetchJson(url.toString(), { warn: true })
   const tracks = data?.tracks?.track
   if (!Array.isArray(tracks)) return null
   for (const t of tracks) {
@@ -45,9 +55,10 @@ async function fetchLastfmTopTrack(genre) {
 
 async function fetchDeezerByGenre(genre) {
   const url = `${DEEZER_SEARCH}?q=${encodeURIComponent(genre)}&limit=5`
-  // Deezer is usually not CORS-friendly from the browser; try direct, then proxy.
+  // Deezer is usually not CORS-friendly from the browser; try direct, then
+  // proxy via our Cloudflare Worker.
   let data = await fetchJson(url)
-  if (!data) data = await fetchJson(`${PROXY}${encodeURIComponent(url)}`)
+  if (!data) data = await fetchJson(deezerProxyUrl(url), { warn: true })
   const items = data?.data
   if (!Array.isArray(items)) return null
   for (const t of items) {
@@ -60,7 +71,7 @@ async function fetchDeezerByGenre(genre) {
 
 async function fetchItunesByGenre(genre) {
   const url = `${ITUNES_SEARCH}?term=${encodeURIComponent(genre)}&entity=song&limit=5`
-  const data = await fetchJson(url)
+  const data = await fetchJson(url, { warn: true })
   const items = data?.results
   if (!Array.isArray(items)) return null
   for (const t of items) {
