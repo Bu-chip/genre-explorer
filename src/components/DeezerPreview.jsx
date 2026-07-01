@@ -1,15 +1,16 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { TrackInfoPopover } from './TrackInfoPopover'
+import { deezerProxyUrl } from '../config'
 import './DeezerPreview.css'
 
-const PROXY = 'https://corsproxy.io/?'
 const DEEZER_SEARCH = 'https://api.deezer.com/search'
 
 async function fetchDeezer(artist, track) {
   const query = `${artist} ${track}`
   const url = `${DEEZER_SEARCH}?q=${encodeURIComponent(query)}&limit=1`
 
-  // Try direct first
+  // Try direct first. Deezer normally blocks this with CORS, but it's cheap
+  // to attempt and avoids a proxy round-trip when it happens to work.
   try {
     const res = await fetch(url)
     if (res.ok) {
@@ -17,18 +18,24 @@ async function fetchDeezer(artist, track) {
       if (data?.data?.[0]) return data.data[0]
     }
   } catch {
-    // CORS likely blocked, try proxy
+    // CORS likely blocked — fall through to the proxy.
   }
 
-  // Try with CORS proxy
+  // Try via our Deezer proxy (Cloudflare Worker).
+  const proxied = deezerProxyUrl(url)
   try {
-    const res = await fetch(`${PROXY}${encodeURIComponent(url)}`)
+    const res = await fetch(proxied)
     if (res.ok) {
       const data = await res.json()
       if (data?.data?.[0]) return data.data[0]
+      // Reached Deezer fine, but no track matched — not an error.
+      return null
     }
-  } catch {
-    // Both failed
+    console.warn(
+      `[DeezerPreview] proxy responded ${res.status} ${res.statusText} for ${proxied}`,
+    )
+  } catch (err) {
+    console.warn(`[DeezerPreview] proxy fetch failed for ${proxied}:`, err)
   }
 
   return null
