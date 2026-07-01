@@ -20,14 +20,33 @@ const MUSIC_KEYWORDS = [
   'melody',
 ]
 
+// Genre names in the index are all-lowercase, but MediaWiki titles are
+// case-sensitive beyond the first letter (which the API uppercases itself).
+// Titles containing proper nouns — "Latin Christian music" — only resolve
+// when the inner words are capitalized too, so each pattern is tried with
+// the raw name and with a Title-Cased name.
+function titleCaseWords(name) {
+  return name.replace(/\S+/g, (w) => w[0].toUpperCase() + w.slice(1))
+}
+
 function buildCandidates(name) {
-  return [
-    name,
-    `${name} music`,
-    `${name} (music)`,
-    `${name} (genre)`,
-    `${name} (music genre)`,
-  ]
+  const bases = [name, titleCaseWords(name)]
+  const patterns = ['', ' music', ' (music)', ' (genre)', ' (music genre)']
+  const seen = new Set()
+  const candidates = []
+  for (const pattern of patterns) {
+    for (const base of bases) {
+      const candidate = `${base}${pattern}`
+      // The API uppercases a title's first letter, so candidates differing
+      // only there are the same page — skip the duplicate lookup.
+      const key = candidate[0].toUpperCase() + candidate.slice(1)
+      if (!seen.has(key)) {
+        seen.add(key)
+        candidates.push(candidate)
+      }
+    }
+  }
+  return candidates
 }
 
 function passesSanityCheck(extract) {
