@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import './GenreCard.css'
 
-export function GenreName({ genre, displayName }) {
+export function GenreName({ genre, displayName, onRandom }) {
   if (!genre) return null
 
   return (
@@ -17,7 +17,14 @@ export function GenreName({ genre, displayName }) {
             animate={{ clipPath: 'inset(0 0% 0 0)' }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
           >
-            {genre.name}
+            <button
+              type="button"
+              className="genre-card__name-button"
+              onClick={onRandom}
+              aria-label={`${genre.name} — load another random genre`}
+            >
+              {genre.name}
+            </button>
           </motion.h2>
         )}
       </div>

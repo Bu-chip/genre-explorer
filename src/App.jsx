@@ -335,7 +335,7 @@ function App() {
               </div>
               <div className="discovery-content">
                 <div className="discovery-block discovery-block--letras">
-                  <GenreName genre={selectedGenre} displayName={spinDisplay} />
+                  <GenreName genre={selectedGenre} displayName={spinDisplay} onRandom={handleRandom} />
                   <ContextPhrase phrase={contextPhrase} spinning={!!spinDisplay} />
                   <DiscoveryCounter genre={selectedGenre} total={genres.length} compact />
                 </div>
