@@ -24,6 +24,31 @@
   hyphens: auto;
 }
 
+/* The name doubles as a "load another random genre" trigger. The button
+   inherits every text style from the h2 so it renders identically. */
+.genre-card__name-button {
+  all: unset;
+  cursor: pointer;
+  display: inline;
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  text-transform: inherit;
+  overflow-wrap: inherit;
+  word-break: inherit;
+  hyphens: inherit;
+  transition: opacity 0.15s ease;
+}
+
+.genre-card__name-button:hover {
+  opacity: 0.7;
+}
+
+.genre-card__name-button:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: var(--space-2);
+}
+
 
 /* Description (Zone 2) */
 .genre-card__desc-wrapper {
