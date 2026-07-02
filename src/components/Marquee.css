@@ -29,6 +29,12 @@
   animation-direction: reverse;
 }
 
+/* The genre-view header marquee reads calmer at a slower crawl; the landing
+   marquees keep the base 80s loop. */
+.marquee--header .marquee__track {
+  animation-duration: 120s;
+}
+
 @keyframes marquee-scroll {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
