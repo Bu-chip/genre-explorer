@@ -136,13 +136,21 @@ def parse_font_size(style):
     return float(match.group(1)) if match else 0.0
 
 
+NEARBY_ID_RE = re.compile(r"^nearbyitem\d+$")
+
+
 def parse_genre_page(html, own_slugs):
     """Extract artists and related genres from an engenremap-<slug>.html page.
 
-    Both artists and related genres are rendered as scatter divs with class
-    "genre scanme"; what tells them apart is the nested navlink target:
-    artists link to artistprofile.cgi?id=<spotify id>, related genres link to
-    engenremap-<slug>.html. Artist font-size encodes relevance in the genre.
+    Verified against real pages (debug/pianoblues.html, debug/bozlak.html on
+    the data/everynoise-scrape branch). A genre page has three .canvas blocks
+    of "genre"-class scatter divs, distinguishable by div id:
+      - id=itemN       artists of the genre; navlink → artistprofile.html?id=
+                       <spotify artist id>; font-size % encodes relevance
+      - id=nearbyitemN the "Related Genres" box; navlink → engenremap-<slug>
+                       .html#tunnel, except nearbyitem1 (the page's own genre,
+                       navlink → everynoise1d-<slug>.html)
+      - id=mirroritemN the dark "mirror" canvas of OPPOSITE genres — excluded
     """
     soup = BeautifulSoup(html, "html.parser")
     artists = []
@@ -158,35 +166,22 @@ def parse_genre_page(html, own_slugs):
         if not name:
             continue
 
-        if "artistprofile.cgi" in href:
+        if "artistprofile." in href:
             artist_id = parse_qs(urlparse(href).query).get("id", [None])[0]
             artists.append({
                 "name": name,
                 "id": artist_id,
                 "size": parse_font_size(div.get("style")),
             })
-        else:
-            slug_match = re.search(r"engenremap-([^/]+)\.html", href)
+        elif NEARBY_ID_RE.match(div.get("id", "")):
+            slug_match = re.search(r"engenremap-([^/#]+)\.html", href)
             if not slug_match:
-                continue
-            if slug_match.group(1) in own_slugs:  # the page's own genre
+                continue  # the page's own genre links to everynoise1d-*.html
+            if slug_match.group(1) in own_slugs:
                 continue
             if name not in seen_related:
                 seen_related.add(name)
                 related.append(name)
-
-    # Some related-genre entries may be plain links outside scatter divs
-    # (navlinks nested in divs were extract()ed above, so no double counting).
-    for a in soup.find_all("a", href=re.compile(r"engenremap-[^/]+\.html")):
-        name = a.get_text().strip()
-        slug_match = re.search(r"engenremap-([^/]+)\.html", a["href"])
-        if not name or not re.search(r"[0-9a-z]", name, re.IGNORECASE):
-            continue  # arrow-only navlink text like "»"
-        if slug_match.group(1) in own_slugs:
-            continue
-        if name not in seen_related:
-            seen_related.add(name)
-            related.append(name)
 
     # rank by EveryNoise's own relevance signal, DOM order breaks ties
     artists.sort(key=lambda a: -a["size"])

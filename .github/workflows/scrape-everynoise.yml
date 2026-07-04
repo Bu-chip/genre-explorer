@@ -19,6 +19,10 @@ on:
         description: 'Debug mode: download the raw HTML of engenremap-<slug>.html and commit it as debug/<slug>.html on the data branch (no scraping).'
         required: false
         default: ''
+      reset:
+        description: 'Discard previously scraped output and start fresh (use after a parser fix invalidates earlier results).'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -44,6 +48,7 @@ jobs:
         run: pip install requests beautifulsoup4
 
       - name: Restore previous scrape state from data branch
+        if: ${{ !inputs.reset }}
         run: |
           if git fetch origin "$DATA_BRANCH" 2>/dev/null; then
             git checkout origin/"$DATA_BRANCH" -- public/data/genres data/everynoise_coverage.json data/everynoise_errors.json 2>/dev/null || true
@@ -76,6 +81,8 @@ jobs:
 
       - name: Commit results to data branch
         if: always()
+        env:
+          RESET: ${{ inputs.reset }}
         run: |
           set -e
           git config user.name "github-actions[bot]"
@@ -87,6 +94,11 @@ jobs:
           cd /tmp/data-branch
           git checkout -B "$DATA_BRANCH"
 
+          if [ "$RESET" = "true" ]; then
+            echo "Reset requested — dropping previous output from the data branch."
+            rm -rf public/data/genres
+            rm -f data/everynoise_coverage.json data/everynoise_errors.json
+          fi
           mkdir -p public/data/genres data debug
           if [ -d "$GITHUB_WORKSPACE/public/data/genres" ]; then
             cp -r "$GITHUB_WORKSPACE"/public/data/genres/. public/data/genres/
