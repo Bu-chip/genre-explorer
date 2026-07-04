@@ -127,6 +127,10 @@ def fetch(session, url):
             last_err = RuntimeError(f"HTTP {resp.status_code}")
             continue
         resp.raise_for_status()
+        # EveryNoise declares utf-8 only in the <meta> tag, not in the HTTP
+        # Content-Type header, so requests would fall back to ISO-8859-1 and
+        # resp.text would mojibake every non-ASCII artist name.
+        resp.encoding = "utf-8"
         return resp.text, 200
     raise last_err
 
