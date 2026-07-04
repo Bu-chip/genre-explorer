@@ -1,21 +1,17 @@
 {
   "total_genres": 5453,
-  "checked": 30,
-  "with_page_count": 30,
+  "checked": 5453,
+  "with_page_count": 5453,
   "without_page_count": 0,
-  "low_artist_count": 30,
+  "low_artist_count": 56,
   "coverage_percent": 100.0,
   "low_artists": [
     {
-      "name": "brazilian punk",
+      "name": "pretty rhythm",
       "artists": 0
     },
     {
-      "name": "argentine telepop",
-      "artists": 0
-    },
-    {
-      "name": "classic mandopop",
+      "name": "love live",
       "artists": 0
     },
     {
@@ -23,107 +19,215 @@
       "artists": 0
     },
     {
-      "name": "groove metal",
+      "name": "ninja",
       "artists": 0
     },
     {
-      "name": "bozlak",
+      "name": "baluchi folk",
       "artists": 0
     },
     {
-      "name": "ukrainian choir",
+      "name": "king of prism",
       "artists": 0
     },
     {
-      "name": "chillstep",
+      "name": "a3",
       "artists": 0
     },
     {
-      "name": "uk noise rock",
+      "name": "sakura wars",
       "artists": 0
     },
     {
-      "name": "rap regio",
+      "name": "super sentai",
       "artists": 0
     },
     {
-      "name": "indie rock colombiano",
+      "name": "pony",
       "artists": 0
     },
     {
-      "name": "traditional reggae",
+      "name": "disney portugues brasil",
       "artists": 0
     },
     {
-      "name": "cybergrind",
+      "name": "polynesian pop",
       "artists": 0
     },
     {
-      "name": "cosmic post-rock",
+      "name": "gundam",
       "artists": 0
     },
     {
-      "name": "canadian latin",
+      "name": "latin",
       "artists": 0
     },
     {
-      "name": "christian indie",
+      "name": "tahitian",
       "artists": 0
     },
     {
-      "name": "experimental rock",
+      "name": "disney espanol",
       "artists": 0
     },
     {
-      "name": "rock caipira",
+      "name": "nuevo regional mexicano",
       "artists": 0
     },
     {
-      "name": "polish alternative rock",
+      "name": "korean mask singer",
       "artists": 0
     },
     {
-      "name": "south african hip hop",
+      "name": "touken ranbu",
       "artists": 0
     },
     {
-      "name": "organic ambient",
+      "name": "honeyworks",
       "artists": 0
     },
     {
-      "name": "folklore peruano",
+      "name": "junior eurovision",
       "artists": 0
     },
     {
-      "name": "deathgrind",
+      "name": "ensemble stars",
       "artists": 0
     },
     {
-      "name": "post-minimalism",
+      "name": "sesame street",
       "artists": 0
     },
     {
-      "name": "kikuyu gospel",
+      "name": "actors",
       "artists": 0
     },
     {
-      "name": "deep idm",
+      "name": "disney portugues",
       "artists": 0
     },
     {
-      "name": "persian neo-traditional",
+      "name": "disney norsk",
       "artists": 0
     },
     {
-      "name": "wind ensemble",
+      "name": "japanese disney",
       "artists": 0
     },
     {
-      "name": "pinoy metal",
+      "name": "disney russian",
       "artists": 0
     },
     {
-      "name": "brazilian black metal",
+      "name": "banda caliente",
+      "artists": 0
+    },
+    {
+      "name": "kamen rider",
+      "artists": 0
+    },
+    {
+      "name": "hypnosis mic",
+      "artists": 0
+    },
+    {
+      "name": "precure",
+      "artists": 0
+    },
+    {
+      "name": "deutsch disney",
+      "artists": 0
+    },
+    {
+      "name": "aikatsu",
+      "artists": 0
+    },
+    {
+      "name": "disney italiano",
+      "artists": 0
+    },
+    {
+      "name": "disney svenska",
+      "artists": 0
+    },
+    {
+      "name": "disney dansk",
+      "artists": 0
+    },
+    {
+      "name": "tsukiuta",
+      "artists": 0
+    },
+    {
+      "name": "pokemon",
+      "artists": 0
+    },
+    {
+      "name": "minecraft",
+      "artists": 0
+    },
+    {
+      "name": "botswanan pop",
+      "artists": 0
+    },
+    {
+      "name": "disney horspiele",
+      "artists": 0
+    },
+    {
+      "name": "korean phantom singer",
+      "artists": 0
+    },
+    {
+      "name": "hangpan",
+      "artists": 0
+    },
+    {
+      "name": "indie cafe pop",
+      "artists": 0
+    },
+    {
+      "name": "regional mexican",
+      "artists": 0
+    },
+    {
+      "name": "final fantasy",
+      "artists": 0
+    },
+    {
+      "name": "disney",
+      "artists": 0
+    },
+    {
+      "name": "starmyu",
+      "artists": 0
+    },
+    {
+      "name": "classic eurovision",
+      "artists": 0
+    },
+    {
+      "name": "deep regional mexican",
+      "artists": 0
+    },
+    {
+      "name": "gochiusa",
+      "artists": 0
+    },
+    {
+      "name": "christian relaxative",
+      "artists": 0
+    },
+    {
+      "name": "eurovision",
+      "artists": 0
+    },
+    {
+      "name": "utapri",
+      "artists": 0
+    },
+    {
+      "name": "dutch disney",
       "artists": 0
     }
   ],
