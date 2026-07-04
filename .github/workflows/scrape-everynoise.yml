@@ -1,0 +1,105 @@
+# One-shot batch scrape of EveryNoise genre pages (site frozen since Nov 2023).
+#
+# Manual trigger only. Output (per-genre JSONs + coverage + error log) is
+# committed to the dedicated branch `data/everynoise-scrape`, never to main.
+# Re-running restores the last committed state from that branch first, so the
+# scraper skips everything already done — safe to relaunch until coverage is
+# complete (a full batch at 1 req/s takes ~90 min, well under the 5 h cap).
+
+name: Scrape EveryNoise artists
+
+on:
+  workflow_dispatch:
+    inputs:
+      sample:
+        description: 'Scrape only N random genres (fixed seed). Leave empty for the full batch.'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: scrape-everynoise
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      DATA_BRANCH: data/everynoise-scrape
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4
+
+      - name: Restore previous scrape state from data branch
+        run: |
+          if git fetch origin "$DATA_BRANCH" 2>/dev/null; then
+            git checkout origin/"$DATA_BRANCH" -- public/data/genres data/everynoise_coverage.json data/everynoise_errors.json 2>/dev/null || true
+            git reset -q HEAD -- public/data/genres data/everynoise_coverage.json data/everynoise_errors.json || true
+            echo "Restored $(ls public/data/genres 2>/dev/null | wc -l) previously scraped genres."
+          else
+            echo "No previous scrape branch — starting fresh."
+          fi
+
+      - name: Run scraper
+        run: |
+          ARGS=""
+          if [ -n "${{ inputs.sample }}" ]; then
+            ARGS="--sample ${{ inputs.sample }}"
+          fi
+          python scripts/scrape-everynoise-artists.py $ARGS
+
+      - name: Commit results to data branch
+        if: always()
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Build the commit in a worktree so the scrape workspace stays intact.
+          BASE=$(git rev-parse --verify -q origin/"$DATA_BRANCH" || git rev-parse HEAD)
+          git worktree add --detach /tmp/data-branch "$BASE"
+          cd /tmp/data-branch
+          git checkout -B "$DATA_BRANCH"
+
+          mkdir -p public/data/genres data
+          if [ -d "$GITHUB_WORKSPACE/public/data/genres" ]; then
+            cp -r "$GITHUB_WORKSPACE"/public/data/genres/. public/data/genres/
+          fi
+          for f in everynoise_coverage.json everynoise_errors.json; do
+            [ -f "$GITHUB_WORKSPACE/data/$f" ] && cp "$GITHUB_WORKSPACE/data/$f" data/
+          done
+
+          git add public/data/genres data/everynoise_coverage.json data/everynoise_errors.json
+          if git diff --cached --quiet; then
+            echo "Nothing new to commit."
+            exit 0
+          fi
+          SCRAPED=$(ls public/data/genres | wc -l)
+          git commit -m "everynoise scrape: $SCRAPED genres scraped (run ${{ github.run_number }})"
+
+          # Retry push with exponential backoff in case of transient failures.
+          for delay in 2 4 8 16; do
+            git push -u origin "$DATA_BRANCH" && exit 0
+            echo "Push failed, retrying in ${delay}s..."
+            sleep "$delay"
+            git fetch origin "$DATA_BRANCH" && git rebase origin/"$DATA_BRANCH" || true
+          done
+          git push -u origin "$DATA_BRANCH"
+
+      - name: Report coverage in summary
+        if: always()
+        run: |
+          python scripts/scrape-everynoise-artists.py --report >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo ""
+            echo "Output committed to branch \`$DATA_BRANCH\`."
+          } >> "$GITHUB_STEP_SUMMARY"
