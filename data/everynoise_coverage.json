@@ -1,0 +1,131 @@
+{
+  "total_genres": 5453,
+  "checked": 30,
+  "with_page_count": 30,
+  "without_page_count": 0,
+  "low_artist_count": 30,
+  "coverage_percent": 100.0,
+  "low_artists": [
+    {
+      "name": "brazilian punk",
+      "artists": 0
+    },
+    {
+      "name": "argentine telepop",
+      "artists": 0
+    },
+    {
+      "name": "classic mandopop",
+      "artists": 0
+    },
+    {
+      "name": "macross",
+      "artists": 0
+    },
+    {
+      "name": "groove metal",
+      "artists": 0
+    },
+    {
+      "name": "bozlak",
+      "artists": 0
+    },
+    {
+      "name": "ukrainian choir",
+      "artists": 0
+    },
+    {
+      "name": "chillstep",
+      "artists": 0
+    },
+    {
+      "name": "uk noise rock",
+      "artists": 0
+    },
+    {
+      "name": "rap regio",
+      "artists": 0
+    },
+    {
+      "name": "indie rock colombiano",
+      "artists": 0
+    },
+    {
+      "name": "traditional reggae",
+      "artists": 0
+    },
+    {
+      "name": "cybergrind",
+      "artists": 0
+    },
+    {
+      "name": "cosmic post-rock",
+      "artists": 0
+    },
+    {
+      "name": "canadian latin",
+      "artists": 0
+    },
+    {
+      "name": "christian indie",
+      "artists": 0
+    },
+    {
+      "name": "experimental rock",
+      "artists": 0
+    },
+    {
+      "name": "rock caipira",
+      "artists": 0
+    },
+    {
+      "name": "polish alternative rock",
+      "artists": 0
+    },
+    {
+      "name": "south african hip hop",
+      "artists": 0
+    },
+    {
+      "name": "organic ambient",
+      "artists": 0
+    },
+    {
+      "name": "folklore peruano",
+      "artists": 0
+    },
+    {
+      "name": "deathgrind",
+      "artists": 0
+    },
+    {
+      "name": "post-minimalism",
+      "artists": 0
+    },
+    {
+      "name": "kikuyu gospel",
+      "artists": 0
+    },
+    {
+      "name": "deep idm",
+      "artists": 0
+    },
+    {
+      "name": "persian neo-traditional",
+      "artists": 0
+    },
+    {
+      "name": "wind ensemble",
+      "artists": 0
+    },
+    {
+      "name": "pinoy metal",
+      "artists": 0
+    },
+    {
+      "name": "brazilian black metal",
+      "artists": 0
+    }
+  ],
+  "without_page": []
+}
