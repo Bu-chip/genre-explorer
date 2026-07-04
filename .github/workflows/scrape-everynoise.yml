@@ -15,6 +15,14 @@ on:
         description: 'Scrape only N random genres (fixed seed). Leave empty for the full batch.'
         required: false
         default: ''
+      debug_slug:
+        description: 'Debug mode: download the raw HTML of engenremap-<slug>.html and commit it as debug/<slug>.html on the data branch (no scraping).'
+        required: false
+        default: ''
+      reset:
+        description: 'Discard previously scraped output and start fresh (use after a parser fix invalidates earlier results).'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -40,8 +48,12 @@ jobs:
         run: pip install requests beautifulsoup4
 
       - name: Restore previous scrape state from data branch
+        if: ${{ !inputs.reset }}
         run: |
-          if git fetch origin "$DATA_BRANCH" 2>/dev/null; then
+          # Explicit refspec: actions/checkout only configures fetch for the
+          # workflow's own branch, so a bare fetch wouldn't create the
+          # origin/<data-branch> remote-tracking ref we read from.
+          if git fetch origin "+refs/heads/$DATA_BRANCH:refs/remotes/origin/$DATA_BRANCH" 2>/dev/null; then
             git checkout origin/"$DATA_BRANCH" -- public/data/genres data/everynoise_coverage.json data/everynoise_errors.json 2>/dev/null || true
             git reset -q HEAD -- public/data/genres data/everynoise_coverage.json data/everynoise_errors.json || true
             echo "Restored $(ls public/data/genres 2>/dev/null | wc -l) previously scraped genres."
@@ -49,7 +61,20 @@ jobs:
             echo "No previous scrape branch — starting fresh."
           fi
 
+      - name: Download raw debug page
+        if: inputs.debug_slug != ''
+        env:
+          DEBUG_SLUG: ${{ inputs.debug_slug }}
+        run: |
+          mkdir -p debug
+          curl -fsS --retry 2 \
+            -A "genre-explorer/1.0 (one-time batch; https://github.com/Bu-chip/genre-explorer; mborrajor@gmail.com)" \
+            -o "debug/${DEBUG_SLUG}.html" \
+            "https://everynoise.com/engenremap-${DEBUG_SLUG}.html"
+          wc -c "debug/${DEBUG_SLUG}.html"
+
       - name: Run scraper
+        if: inputs.debug_slug == ''
         run: |
           ARGS=""
           if [ -n "${{ inputs.sample }}" ]; then
@@ -59,47 +84,93 @@ jobs:
 
       - name: Commit results to data branch
         if: always()
+        env:
+          RESET: ${{ inputs.reset }}
+          SAMPLE: ${{ inputs.sample }}
         run: |
           set -e
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+          # The restore step is skipped on reset runs, so ALWAYS fetch the
+          # data branch here (explicit refspec — see the restore step) before
+          # picking the base. Basing on HEAD when the remote branch exists
+          # produces a divergent history and a rejected push.
+          git fetch origin "+refs/heads/$DATA_BRANCH:refs/remotes/origin/$DATA_BRANCH" 2>/dev/null || true
+
+          MODE="full batch"
+          if [ -n "$SAMPLE" ]; then MODE="sample $SAMPLE"; fi
+
           # Build the commit in a worktree so the scrape workspace stays intact.
-          BASE=$(git rev-parse --verify -q origin/"$DATA_BRANCH" || git rev-parse HEAD)
-          git worktree add --detach /tmp/data-branch "$BASE"
+          git worktree add --detach /tmp/data-branch HEAD
           cd /tmp/data-branch
-          git checkout -B "$DATA_BRANCH"
 
-          mkdir -p public/data/genres data
-          if [ -d "$GITHUB_WORKSPACE/public/data/genres" ]; then
-            cp -r "$GITHUB_WORKSPACE"/public/data/genres/. public/data/genres/
-          fi
-          for f in everynoise_coverage.json everynoise_errors.json; do
-            [ -f "$GITHUB_WORKSPACE/data/$f" ] && cp "$GITHUB_WORKSPACE/data/$f" data/
-          done
+          # Snapshot the outputs as ONE commit on top of the given base.
+          # No rebase anywhere: on a rejected push we simply rebuild the
+          # snapshot on the freshly fetched tip and push again.
+          build_snapshot() {
+            base=$(git rev-parse --verify -q origin/"$DATA_BRANCH" || git rev-parse HEAD)
+            git checkout -q -B "$DATA_BRANCH" "$base"
+            if [ "$RESET" = "true" ]; then
+              echo "Reset requested — dropping previous output from the data branch."
+              rm -rf public/data/genres
+              rm -f data/everynoise_coverage.json data/everynoise_errors.json
+            fi
+            mkdir -p public/data/genres data debug
+            if [ -d "$GITHUB_WORKSPACE/public/data/genres" ]; then
+              cp -r "$GITHUB_WORKSPACE"/public/data/genres/. public/data/genres/
+            fi
+            if [ -d "$GITHUB_WORKSPACE/debug" ]; then
+              cp -r "$GITHUB_WORKSPACE"/debug/. debug/
+            fi
+            for f in everynoise_coverage.json everynoise_errors.json; do
+              if [ -f "$GITHUB_WORKSPACE/data/$f" ]; then
+                cp "$GITHUB_WORKSPACE/data/$f" data/
+              fi
+            done
+            git add public/data/genres data debug
+            if git diff --cached --quiet; then
+              return 1
+            fi
+            SCRAPED=$(ls public/data/genres | wc -l)
+            git commit -q -m "everynoise scrape: $SCRAPED genres on branch ($MODE, run ${{ github.run_number }})"
+          }
 
-          git add public/data/genres data/everynoise_coverage.json data/everynoise_errors.json
-          if git diff --cached --quiet; then
+          if ! build_snapshot; then
             echo "Nothing new to commit."
             exit 0
           fi
-          SCRAPED=$(ls public/data/genres | wc -l)
-          git commit -m "everynoise scrape: $SCRAPED genres scraped (run ${{ github.run_number }})"
 
-          # Retry push with exponential backoff in case of transient failures.
+          # Retry with backoff: transient network failures, or (in theory) a
+          # concurrent push — rebuild the snapshot on the new tip and retry.
           for delay in 2 4 8 16; do
-            git push -u origin "$DATA_BRANCH" && exit 0
-            echo "Push failed, retrying in ${delay}s..."
+            git push origin "$DATA_BRANCH" && exit 0
+            echo "Push failed, refetching and rebuilding snapshot in ${delay}s..."
             sleep "$delay"
-            git fetch origin "$DATA_BRANCH" && git rebase origin/"$DATA_BRANCH" || true
+            git fetch origin "+refs/heads/$DATA_BRANCH:refs/remotes/origin/$DATA_BRANCH" || true
+            git reset -q --hard HEAD  # drop any half-applied state, tree stays clean
+            build_snapshot || { echo "Nothing new to commit after refetch."; exit 0; }
           done
-          git push -u origin "$DATA_BRANCH"
+          git push origin "$DATA_BRANCH"
 
       - name: Report coverage in summary
         if: always()
+        env:
+          DEBUG_SLUG: ${{ inputs.debug_slug }}
+          SAMPLE: ${{ inputs.sample }}
+          RESET: ${{ inputs.reset }}
         run: |
-          python scripts/scrape-everynoise-artists.py --report >> "$GITHUB_STEP_SUMMARY"
-          {
-            echo ""
-            echo "Output committed to branch \`$DATA_BRANCH\`."
-          } >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "$DEBUG_SLUG" ]; then
+            echo "Debug run: raw page committed as \`debug/${DEBUG_SLUG}.html\` on \`$DATA_BRANCH\`." >> "$GITHUB_STEP_SUMMARY"
+          else
+            MODE="FULL BATCH"
+            if [ -n "$SAMPLE" ]; then MODE="SAMPLE of $SAMPLE genres"; fi
+            if [ "$RESET" = "true" ]; then MODE="$MODE (reset: previous output discarded)"; fi
+            echo "**Mode: $MODE**" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            python scripts/scrape-everynoise-artists.py --report >> "$GITHUB_STEP_SUMMARY"
+            {
+              echo ""
+              echo "Output committed to branch \`$DATA_BRANCH\`."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
