@@ -28,3 +28,6 @@ dist-ssr
 
 # Raw data sources (CSV, etc.) — not tracked; generated JSON is tracked
 data/raw/
+
+# Python
+__pycache__/
