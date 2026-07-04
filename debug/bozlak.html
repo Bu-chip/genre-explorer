@@ -1,0 +1,445 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<style type="text/css">
+body {font: 14px GillSansRegular, "Gill Sans MT", "Gill Sans", "Trebuchet MS", sans-serif; width: 1500px; background: white}
+.canvas {position: relative}
+.genre {padding: 0px 2px; position: absolute; white-space: nowrap; cursor: pointer;}
+.genre:hover {color: black !important}
+.genre[played]:before {content: "\266B" !important; color: black !important}
+#mirror .genre:hover {color: white !important}
+#mirror .genre[played]:before {content: "\266B" !important; color: white !important}
+#mirror .current.genre[played]:before {color: gray !important}
+.genrelink {padding: 0px 2px; position: absolute; white-space: nowrap;}
+#mirror .genre[played] {color: #E6ADB7 !important}
+.title {float: left; font-weight: bold; font-size: 200%; margin-right: 32px; color: black}
+.title a {color: black}
+.showsong {position: absolute; left: 300px}
+form {display: inline; white-space: nowrap;}
+a, .related a {text-decoration: none; color: teal}
+a:hover, .fakelink:hover {color: FireBrick !important}
+.fakelink, .togglecontrols {cursor: pointer; color: teal}
+.genre.current {font-weight: bold; padding: 1px 2px; background: whitesmoke; border-color: black; border-style: solid;
+    border-width: 1px 1px 1px 8px; z-index: 1000}
+.genre.current .navlink {background: whitesmoke}
+.navlink {display: none; color: FireBrick; background: white; padding: 0px 2px}
+#mirror .navlink {background: inherit}
+.navlink:hover {color: white !important; background: black !important}
+#mirror .navlink:hover {color: black !important; background: white !important}
+.genre.current .navlink, .genre:hover .navlink, .genrelink:hover .navlink {display: inline; z-index: 10000}
+.genrelink:hover .navlink {color: black}
+.related {color: gray; margin-top: 32px; width: 1400px;}
+.related a {white-space: nowrap}
+.sigil {color: black}
+</style>
+
+
+<script type="text/javascript">
+var nowplaying = '';
+var nowpending = '';
+var gdivs = [];
+var scandivs = [];
+var clicknumber = 1;
+var scandur = 6000;
+
+function redraw() {
+    document.forms[0].submit();
+}
+
+function getpreviewurl(id) {
+    var http_request = new XMLHttpRequest();
+    url = '/spotproxy.cgi?track=' + id;
+    http_request.open("GET", url, false);
+    http_request.send(null);
+    tdata = JSON.parse(http_request.responseText);
+    if ('preview_url' in tdata) {
+        previewurl = tdata['preview_url'];
+        return previewurl;
+    }
+    return null;
+}
+
+function playx(key, genre, me) {
+    window.clearTimeout(nowpending);
+    var spotifyplayer = document.getElementById('spotifyplayer');
+    if (nowplaying == genre) {
+        spotifyplayer.pause();
+        highlight('');
+        nowplaying = '';
+        document.getElementById('scan').innerText = 'scan';
+    } else {
+        previewurl = me.getAttribute('preview_url')
+        if (!previewurl && key) {
+            previewurl = getpreviewurl(key);
+        }
+        if (previewurl) {
+            spotifyplayer.src = previewurl;
+            spotifyplayer.play();
+            me.setAttribute('played', clicknumber++);
+            nowplaying = genre;
+            highlight(genre);
+        }
+    }
+}
+
+function findPosX(obj)
+{
+    var left = 0;
+    if(obj.offsetParent)
+    {
+        while(1) 
+        {
+          left += obj.offsetLeft;
+          if(!obj.offsetParent)
+            break;
+          obj = obj.offsetParent;
+        }
+    }
+    else if(obj.x)
+    {
+        left += obj.x;
+    }
+    return left;
+}
+
+function findPosY(obj)
+{
+    var top = 0;
+    if(obj.offsetParent)
+    {
+        while(1)
+        {
+          top += obj.offsetTop;
+          if(!obj.offsetParent)
+            break;
+          obj = obj.offsetParent;
+        }
+    }
+    else if(obj.y)
+    {
+        top += obj.y;
+    }
+    return top;
+}
+
+function playhere(me, url) {
+    var rp = document.getElementById('rp');
+    rp.style.display = 'none';
+    rp.firstChild.onload = function() {
+        rp.style.top = findPosY(me) + 20;
+        rleft = findPosX(me);
+        if (rleft + 500 > window.innerWidth) {
+            rleft = window.innerWidth - 500;
+            if (rleft < 0) {
+                rleft = 0;
+            }
+        }
+        rp.style.left = rleft;
+        rp.style.display = 'block';
+    }
+    rp.lastChild.src = url;
+}
+
+function highlight(which) {
+    if (gdivs.length == 0) {
+        gdivs = document.getElementsByClassName('genre');
+    }
+    for (i=0; i<gdivs.length; i++) {
+        thisdiv = gdivs[i];
+        thistext = thisdiv.firstChild.textContent;
+        if (thisdiv.className.indexOf('scanme') > -1) {
+            basename = 'genre scanme';
+        } else {
+            basename = 'genre';
+        }
+        if (which.length > 0 && which.trim() == thistext.trim().replace('"', '')) {
+            thisdiv.className = basename + ' current';
+            if(typeof thisdiv.scrollIntoViewIfNeeded == 'function') {
+                thisdiv.scrollIntoViewIfNeeded();
+            } else {
+                thisdiv.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
+            }
+        } else {
+            thisdiv.className = basename;
+        }
+    }
+}
+
+function scan(e, state) {
+    if (typeof(e) == 'object') {
+        if (e.altKey) {
+            scandur = 20000;
+        } else {
+            scandur = 6000;
+        }
+    }
+    var spotifyplayer = document.getElementById('spotifyplayer');
+    if (state == 'stop') {
+        spotifyplayer.pause();        
+        highlight('');
+        window.clearTimeout(nowpending);
+    } else {
+        if (gdivs.length == 0) {
+            gdivs = document.getElementsByClassName('scanme');
+        }
+        scandivs = [];
+        for (i=0; i<gdivs.length; i++) {
+            thisdiv = gdivs[i];
+            if (thisdiv.getAttribute('scan') && !thisdiv.getAttribute('played')) {
+                scandivs.push(thisdiv)
+            }
+        }
+        picked = scandivs[Math.floor(Math.random() * scandivs.length)];
+        picked.onclick();
+        if (scandivs.length > 1) {
+            nowpending = window.setTimeout('scan("continue")', scandur);
+        } else {
+            nowpending = window.setTimeout('scan("stop")', scandur);
+        }
+    }
+}
+
+function togglecontrols() {
+    var spotifyplayer = document.getElementById('spotifyplayer');
+    if (spotifyplayer.style.visibility == 'hidden') {
+        spotifyplayer.style.visibility = 'visible';
+    } else {
+        spotifyplayer.style.visibility = 'hidden';
+    }
+}
+
+function kb(event) {
+    if(event.code === 'Space' || event.code === 'Enter') {
+        event.target.click();
+        event.preventDefault();
+    }
+}
+
+</script>
+
+<title>Every Noise at Once - bozlak</title>
+
+</head>
+<body>
+
+<div class=title><a href="engenremap.html">Every Noise at Once</a> &middot; bozlak
+&nbsp; <span class=fakelink role=button tabindex=0 id=scan onKeyDown="kb(event);" onclick="if (this.innerText == 'scan') {scan(event, 'start');this.innerHTML = 'stop';} else {scan(event, 'stop');this.innerHTML = 'scan';}" style="color: gray; cursor: pointer" >scan</span>
+&nbsp; <a style="color: gray" href="research.html?mode=genre&name=bozlak">list</a>
+&nbsp; <a style="color: #989898" href="https://open.spotify.com/playlist/35qTca30VI81L6lzyZFLXH" title="listen to The Sound of Bozlak on Spotify">playlist</a>
+&nbsp; <a style="color: #a6a6a6" href="https://open.spotify.com/user/particledetector/playlist/0ykVKA7ku6kNnm63FWDdrT" title="listen to a shorter introduction to this genre">intro</a>
+&nbsp; <a style="color: #b4b4b4" href="https://open.spotify.com/user/particledetector/playlist/5t2NFm4zD8mer2v9fpvgKr" title="listen to this genre's fans' current favorites">pulse</a>
+&nbsp; <a style="color: #c2c2c2" href="https://open.spotify.com/user/particledetector/playlist/6ISnQh74X11HOjfKpJBCfk" title="listen to this genre's fans' new discoveries">edge</a>
+&nbsp; <a style="color: #d0d0d0" href="nrbg.html?genre=bozlak">new</a></div>
+<div class=canvas role=main style="width: 1480px; height: 936px; top: 64px">
+<div id=item1 preview_url="https://p.scdn.co/mp3-preview/a66ee55766f967ed609bf137829c9a739db903ec" class="genre scanme" scan=true style="color: #6a9518; top: 809px; left: 728px; font-size: 160%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;7enm32set9MaD0qigcGPnl&quot;, &quot;Neşet Ertaş&quot;, this);" title="e.g. Neşet Ertaş &quot;Yolcu&quot;">Neşet Ertaş<a class=navlink href="artistprofile.html?id=1afML5pJuVr3ye8TGyYcV2" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item2 preview_url="https://p.scdn.co/mp3-preview/2ef455784c082e22c4d621b7da409d26918525fa" class="genre scanme" scan=true style="color: #9e8900; top: 374px; left: 749px; font-size: 135%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;3RMAETCCvz76ypHwuthImT&quot;, &quot;Engin Nursani&quot;, this);" title="e.g. Engin Nursani &quot;Verin Benim Sevdiğimi&quot;">Engin Nursani<a class=navlink href="artistprofile.html?id=77F1glwWTaaPwiK1QLzPMS" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item3 preview_url="https://p.scdn.co/mp3-preview/a9dcba92c7c7da15aa0f3b4ff498abb20e186d65" class="genre scanme" scan=true style="color: #829004; top: 466px; left: 573px; font-size: 130%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;161WXEiV8LIPzFLcbXlrv1&quot;, &quot;Güler Duman&quot;, this);" title="e.g. Güler Duman &quot;Güle Yel Değdi&quot;">Güler Duman<a class=navlink href="artistprofile.html?id=56TBrBN0rtJxZfvKcGtfDS" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item4 preview_url="https://p.scdn.co/mp3-preview/b14daefcf44cfdc5c9c6dec5ff256063d261dbf1" class="genre scanme" scan=true style="color: #6c963b; top: 587px; left: 856px; font-size: 125%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;1i4aPgWCSvl0htp3Izkxct&quot;, &quot;Arif Sağ&quot;, this);" title="e.g. Arif Sağ &quot;Erisin Dağların Karı&quot;">Arif Sağ<a class=navlink href="artistprofile.html?id=1Nq4oosKQ4TQScASZpgbz0" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item5 preview_url="https://p.scdn.co/mp3-preview/42e61912213a4758dc8daa14c6f2672039b33565" class="genre scanme" scan=true style="color: #659302; top: 680px; left: 1322px; font-size: 125%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;6NjvB42wBuzfEu9mEvMm7b&quot;, &quot;Aşık Mahzuni Şerif&quot;, this);" title="e.g. Aşık Mahzuni Şerif &quot;Sarhoş&quot;">Aşık Mahzuni Şerif<a class=navlink href="artistprofile.html?id=4kNfut5xtwFz4AraRDFarT" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item6 preview_url="https://p.scdn.co/mp3-preview/9e5f00d3f1325b88769a8292ea06de04b297956f" class="genre scanme" scan=true style="color: #a08b00; top: 224px; left: 658px; font-size: 124%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;5JU56Sf7mLsHMiXyN2NWrU&quot;, &quot;Kıvırcık Ali&quot;, this);" title="e.g. Kıvırcık Ali &quot;Gül Tükendi Ben Tükendim&quot;">Kıvırcık Ali<a class=navlink href="artistprofile.html?id=5nObFnlOBawrX748LB4ioF" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item7 preview_url="https://p.scdn.co/mp3-preview/71fe56720beac151e8cffd244b406e842352c2a5" class="genre scanme" scan=true style="color: #8f900e; top: 605px; left: 445px; font-size: 122%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;6tuHzcgjBxREd4eGIjYBOc&quot;, &quot;Tufan Altaş&quot;, this);" title="e.g. Tufan Altaş &quot;Pınar Başından Bulanır&quot;">Tufan Altaş<a class=navlink href="artistprofile.html?id=0UxSX5g1BLYgUV7uwM6GfT" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item8 preview_url="https://p.scdn.co/mp3-preview/bea82400e9c2f678f9670612b5ec530d15065684" class="genre scanme" scan=true style="color: #958f03; top: 245px; left: 1138px; font-size: 117%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;7t45KCnukn5MTp7myE6XtS&quot;, &quot;Aycan Öner&quot;, this);" title="e.g. Aycan Öner &quot;Eski Tadım Yok Artık&quot;">Aycan Öner<a class=navlink href="artistprofile.html?id=5iPNumB31JoSUYsQHWdXS0" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item9 preview_url="https://p.scdn.co/mp3-preview/af2e786b10828ad225609dc4c8410fad4e2c4d93" class="genre scanme" scan=true style="color: #799605; top: 557px; left: 742px; font-size: 116%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;5SxLzEmVppF5ohtHmEn9Eq&quot;, &quot;Ozan Manas&quot;, this);" title="e.g. Ozan Manas &quot;Kara Geceler&quot;">Ozan Manas<a class=navlink href="artistprofile.html?id=5jffpxTXj4RE2FI42yAgqB" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item10 preview_url="https://p.scdn.co/mp3-preview/66e275c18b20cb92753fb5ad621503399151b323" class="genre scanme" scan=true style="color: #ab8707; top: 484px; left: 467px; font-size: 114%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;4EKNYBdKsbqsVXdVwuvnbn&quot;, &quot;Tahir Uçar&quot;, this);" title="e.g. Tahir Uçar &quot;Kanlı Felek&quot;">Tahir Uçar<a class=navlink href="artistprofile.html?id=0s78FQHfWvPlHpqqqNK6Cx" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item11 preview_url="https://p.scdn.co/mp3-preview/736aa682eb3aa92898fef1e00641ab25aa0b456c" class="genre scanme" scan=true style="color: #899603; top: 360px; left: 580px; font-size: 113%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;4JSjzhPEfGnFK03veWysum&quot;, &quot;İsmail Altunsaray&quot;, this);" title="e.g. İsmail Altunsaray &quot;Kız Senin&quot;">İsmail Altunsaray<a class=navlink href="artistprofile.html?id=6eCCcDYDaPBeTuUEbhllw2" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item12 preview_url="https://p.scdn.co/mp3-preview/d9e1c430200bfe2dc927d518e7abc8ab8e59897d" class="genre scanme" scan=true style="color: #78920c; top: 428px; left: 728px; font-size: 113%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;73AXcFnOUoJ0geCrevt1pq&quot;, &quot;Emre Saltık&quot;, this);" title="e.g. Emre Saltık &quot;Ölesiye Özledim&quot;">Emre Saltık<a class=navlink href="artistprofile.html?id=0tLZLCnUQN43Tdh7NAHJas" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item13 preview_url="https://p.scdn.co/mp3-preview/fee3264e8cae069ec53e2076c678c62cfdf1da20" class="genre scanme" scan=true style="color: #42ac00; top: 763px; left: 969px; font-size: 110%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;4N8YnenfTzbjcENMojPITq&quot;, &quot;Olgun Şimşek&quot;, this);" title="e.g. Olgun Şimşek &quot;Üflediler Söndüm&quot;">Olgun Şimşek<a class=navlink href="artistprofile.html?id=4tIabT0jSGwXqUMIX6Kavb" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item14 preview_url="https://p.scdn.co/mp3-preview/65f33c2065093e4c6329d9ba0f2d081a7a434161" class="genre scanme" scan=true style="color: #a78e08; top: 229px; left: 1075px; font-size: 110%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;6Kmc5lhcWYs3dSHNNkyBzE&quot;, &quot;Okan Babacan&quot;, this);" title="e.g. Okan Babacan &quot;Ben O Kara Kıza Yar Olamadım&quot;">Okan Babacan<a class=navlink href="artistprofile.html?id=2DKLemc11pgmIGWJfiuHOS" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item15 preview_url="https://p.scdn.co/mp3-preview/a6aff4dab5f99f9b6bd249c2e70fb1889c77a490" class="genre scanme" scan=true style="color: #739806; top: 574px; left: 785px; font-size: 109%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;3SMhNsdbtLkZJ5eUP2BQkP&quot;, &quot;Neşet Abalıoğlu&quot;, this);" title="e.g. Neşet Abalıoğlu &quot;Sağım Yalan Solum Yalan&quot;">Neşet Abalıoğlu<a class=navlink href="artistprofile.html?id=1T7kNb1ZEIy55ZfXSkAL1T" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item16 preview_url="https://p.scdn.co/mp3-preview/6f6bd3d5c16227547f9d98542f530db45d9fe93d" class="genre scanme" scan=true style="color: #38a827; top: 863px; left: 544px; font-size: 109%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;2X4TYUtBqqknc8YTTZ0Xko&quot;, &quot;Muhlis Berberoğlu&quot;, this);" title="e.g. Muhlis Berberoğlu &quot;Oy Yaylalar - Bu Tepe KarlıTepe&quot;">Muhlis Berberoğlu<a class=navlink href="artistprofile.html?id=6SHSUjGHvYozKBuGDtIJY5" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item17 preview_url="https://p.scdn.co/mp3-preview/a8977ec06fd53d64d7ff8a5b685a0b71041e2a0c" class="genre scanme" scan=true style="color: #7d8e72; top: 869px; left: 247px; font-size: 108%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;5YKAkjak914loFYtqSW28L&quot;, &quot;Çekiç Ali&quot;, this);" title="e.g. Çekiç Ali &quot;Doğar Yaz Ayları&quot;">Çekiç Ali<a class=navlink href="artistprofile.html?id=6D2UnpGDi9Vbeh9c2LZBoq" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item18 preview_url="https://p.scdn.co/mp3-preview/65811052b61ae06636b8f90d037464e30d88e162" class="genre scanme" scan=true style="color: #92940b; top: 474px; left: 742px; font-size: 106%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;67R8423JaaxVoMp0weuFLh&quot;, &quot;Mesut Dağlı&quot;, this);" title="e.g. Mesut Dağlı &quot;Dağlarına Kar Olurum&quot;">Mesut Dağlı<a class=navlink href="artistprofile.html?id=3gvkvnargnBRZM0WWGgbFr" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item19 preview_url="https://p.scdn.co/mp3-preview/06f0cf0f366fcb39cf1177701b0d8380b4516d26" class="genre scanme" scan=true style="color: #68951b; top: 722px; left: 990px; font-size: 106%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;4miG2pAlEvxqQMLZZwJ3Bb&quot;, &quot;Ekrem Çelebi&quot;, this);" title="e.g. Ekrem Çelebi &quot;Ah Yalan Dünya&quot;">Ekrem Çelebi<a class=navlink href="artistprofile.html?id=0UD0riDi8Kh2ySQ9oreUdC" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item20 preview_url="https://p.scdn.co/mp3-preview/e3f0e1e3b883b252276c09052b770de3566ed7b2" class="genre scanme" scan=true style="color: #a78b04; top: 266px; left: 339px; font-size: 106%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;3IYhTxBs5HCEY3HUVbeY97&quot;, &quot;Bektaş Dolu&quot;, this);" title="e.g. Bektaş Dolu &quot;Sen Gülersen&quot;">Bektaş Dolu<a class=navlink href="artistprofile.html?id=2QtZHVC1b5iavQ5bPVwkOL" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item21 preview_url="https://p.scdn.co/mp3-preview/93e5c7866a4e4e0c6201568a12da4684fcaf273c" class="genre scanme" scan=true style="color: #5aa316; top: 692px; left: 643px; font-size: 106%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;3ModSlfIb9k8JWG5MQm9Du&quot;, &quot;Emirhan Kartal&quot;, this);" title="e.g. Emirhan Kartal &quot;Gönül Senin Elinden&quot;">Emirhan Kartal<a class=navlink href="artistprofile.html?id=3UXMa767n2l41aKQ5MTCpx" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item22 preview_url="https://p.scdn.co/mp3-preview/1d211add8f8c8ab846e69ceb2380db668fb1dd06" class="genre scanme" scan=true style="color: #559f15; top: 817px; left: 1046px; font-size: 106%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;43sHOdmQGM7aWbTedJAhZZ&quot;, &quot;Hacı Taşan&quot;, this);" title="e.g. Hacı Taşan &quot;Sürüler İçinde - Aşağıdan Gelir Gelinin Göçü&quot;">Hacı Taşan<a class=navlink href="artistprofile.html?id=1HqctWgywjkvL2DDjEaguw" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item23 preview_url="https://p.scdn.co/mp3-preview/c5cbbef78b99c813eda8e6588f72afd86df04c59" class="genre scanme" scan=true style="color: #ab8700; top: 210px; left: 1004px; font-size: 105%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;0in0WXUX6J7DQWvN0elszv&quot;, &quot;Serhan Ilbeyi&quot;, this);" title="e.g. Serhan Ilbeyi &quot;Pancar Pezik&quot;">Serhan Ilbeyi<a class=navlink href="artistprofile.html?id=0AM5px4Qd7UeFIV1aRv1Il" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item24 preview_url="https://p.scdn.co/mp3-preview/440df6b8c78df0e889c30233b224bf6ae684ec58" class="genre scanme" scan=true style="color: #888d01; top: 709px; left: 552px; font-size: 105%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;14iQVfn5DBuryW8GbRCofZ&quot;, &quot;Haydar Akyol&quot;, this);" title="e.g. Haydar Akyol &quot;Su Vermez Bağında&quot;">Haydar Akyol<a class=navlink href="artistprofile.html?id=6Md7osSfEXxeJlkBOLtKZo" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item25 preview_url="https://p.scdn.co/mp3-preview/7b9f54b46aa76629e6c0eba65c61f29c1dc4a5ec" class="genre scanme" scan=true style="color: #799807; top: 709px; left: 891px; font-size: 105%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;5bpzm2ixFjHEmT90eZan2m&quot;, &quot;Hulusi Gökmeşe&quot;, this);" title="e.g. Hulusi Gökmeşe &quot;Gördün Mü&quot;">Hulusi Gökmeşe<a class=navlink href="artistprofile.html?id=1CJQiav8aDJPs7LRa9yKKM" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item26 preview_url="https://p.scdn.co/mp3-preview/e22313833caccbdd7f09563532812fc28db126b4" class="genre scanme" scan=true style="color: #9a7902; top: 624px; left: 608px; font-size: 105%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;3XntuqbLFy1AW889jPYikG&quot;, &quot;Arafa Akyol&quot;, this);" title="e.g. Arafa Akyol &quot;Oy Asiye&quot;">Arafa Akyol<a class=navlink href="artistprofile.html?id=2A2uOK5yrnQCdgZq1dUVB5" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item27 preview_url="https://p.scdn.co/mp3-preview/a806f91273157b5fdc354bb61ca768cbd440dc5e" class="genre scanme" scan=true style="color: #46a807; top: 746px; left: 643px; font-size: 105%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;5w835yByS7SoixvfIEbbQy&quot;, &quot;Umut Sülünoğlu&quot;, this);" title="e.g. Umut Sülünoğlu &quot;Pınara Gelki Görem&quot;">Umut Sülünoğlu<a class=navlink href="artistprofile.html?id=3bJqLKYeyR5QdTpzqVbPaV" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item28 preview_url="https://p.scdn.co/mp3-preview/0137e1d139eed6f8fbc2cefb2e036e8754fda1b6" class="genre scanme" scan=true style="color: #4e9416; top: 896px; left: 1039px; font-size: 104%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;4ZB6Ogrl5cj54F8BM9WTAR&quot;, &quot;Muharrem Ertaş&quot;, this);" title="e.g. Muharrem Ertaş &quot;Kalktı Göç Eyledi Avşar Elleri&quot;">Muharrem Ertaş<a class=navlink href="artistprofile.html?id=3o5s5dBNRSwEhSWW2GI6n6" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item29 preview_url="https://p.scdn.co/mp3-preview/1e6474e54d9f387f97bf390f30b50d8e481b96d2" class="genre scanme" scan=true style="color: #bd7e00; top: 0px; left: 827px; font-size: 104%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;5jCTWgzWaR4J28IclVORbi&quot;, &quot;Hüseyin Bozbayır&quot;, this);" title="e.g. Hüseyin Bozbayır &quot;Dilî Razîla&quot;">Hüseyin Bozbayır<a class=navlink href="artistprofile.html?id=1Z4TBgjo2uysmdi4L8U2kv" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item30 preview_url="https://p.scdn.co/mp3-preview/2da7043b427f63dae2fa8d22ffdd1a37a38273ed" class="genre scanme" scan=true style="color: #b475dc; top: 64px; left: 1188px; font-size: 104%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;77bxt1YNzzVyUQkMFuN0tb&quot;, &quot;Çetin Akdeniz&quot;, this);" title="e.g. Çetin Akdeniz &quot;Kaytağı&quot;">Çetin Akdeniz<a class=navlink href="artistprofile.html?id=47EYwt2gKp50aRR362fihj" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item31 preview_url="https://p.scdn.co/mp3-preview/19f70b36ecf2b34cf26cfdf2fdb95a38527af67e" class="genre scanme" scan=true style="color: #ac8500; top: 279px; left: 325px; font-size: 103%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;0pLRvU96nBP3JCQk8RAIO3&quot;, &quot;Eren Özütemiz&quot;, this);" title="e.g. Eren Özütemiz &quot;Kıvırcık Ali Türküleri: Yaralarım&quot;">Eren Özütemiz<a class=navlink href="artistprofile.html?id=11b47Ovlw02wLBErkXfOYZ" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item32 preview_url="https://p.scdn.co/mp3-preview/1144439bc91dab18574845a0b40e90007e0f62c3" class="genre scanme" scan=true style="color: #99850a; top: 285px; left: 898px; font-size: 103%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;3Rj415Ciyt5r4M4fdKNzqA&quot;, &quot;Halil Erkal&quot;, this);" title="e.g. Halil Erkal &quot;Dert Deryası&quot;">Halil Erkal<a class=navlink href="artistprofile.html?id=06wmlUg75G47K2FXBEDeyl" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item33 preview_url="https://p.scdn.co/mp3-preview/ef910d0275ce3419b1ebb1b659de0bc66239d708" class="genre scanme" scan=true style="color: #67a005; top: 830px; left: 1089px; font-size: 103%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;77UrAIG0Hry9sELLB9cS6N&quot;, &quot;Kamil Abalıoğlu&quot;, this);" title="e.g. Kamil Abalıoğlu &quot;Haber Sal Sevgilim&quot;">Kamil Abalıoğlu<a class=navlink href="artistprofile.html?id=1ooHQopa1XM4XDLMO481D0" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item34 preview_url="https://p.scdn.co/mp3-preview/7e79c18aec568594a0194528bb48a8473b5619dd" class="genre scanme" scan=true style="color: #a28c08; top: 451px; left: 643px; font-size: 103%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;5p5Mj7d2ftHzIR0qL9W998&quot;, &quot;Emrah Tezcan&quot;, this);" title="e.g. Emrah Tezcan &quot;Vay Kaderim Vay&quot;">Emrah Tezcan<a class=navlink href="artistprofile.html?id=3mzEltO2QkaMifxzHkwSdU" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item35 preview_url="https://p.scdn.co/mp3-preview/73eb8e37d5d23b644d9b09ca07810ec6d3b98f96" class="genre scanme" scan=true style="color: #838e3c; top: 673px; left: 276px; font-size: 102%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;3lzqlNZhNmSPRJgzry8vR0&quot;, &quot;Erol Çöke&quot;, this);" title="e.g. Erol Çöke &quot;Deverek Dağı&quot;">Erol Çöke<a class=navlink href="artistprofile.html?id=4oDfpHT6Ooc9dw84NAeCvA" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item36 preview_url="https://p.scdn.co/mp3-preview/fc97a75f195f5b5383275c5ab9d6b1550a1d85f0" class="genre scanme" scan=true style="color: #6c9a04; top: 761px; left: 1343px; font-size: 102%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;4tV28Zvxgf81LKWH8993o2&quot;, &quot;Nurettin Dadaloğlu&quot;, this);" title="e.g. Nurettin Dadaloğlu &quot;Buda Gelir Buda Geçer&quot;">Nurettin Dadaloğlu<a class=navlink href="artistprofile.html?id=3r5BSflTsuPYGRnqjNJxem" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item37 preview_url="https://p.scdn.co/mp3-preview/c0a19791f0d392db07293e8467cd48dd2ed51166" class="genre scanme" scan=true style="color: #7c8d31; top: 551px; left: 962px; font-size: 102%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;1qJmuE3BW86nEmeFMc9h4E&quot;, &quot;Bahri Altaş&quot;, this);" title="e.g. Bahri Altaş &quot;Kozan Dağı&quot;">Bahri Altaş<a class=navlink href="artistprofile.html?id=3J1KOBPXfYQOioCb2Ex2Ad" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item38 preview_url="https://p.scdn.co/mp3-preview/1f86d5093a7ae94737e7bf4152e35f1eeb28a52a" class="genre scanme" scan=true style="color: #5e9d08; top: 804px; left: 870px; font-size: 102%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;5g7wGJPbnHUC0U29YSMCzx&quot;, &quot;Dursun Uçar&quot;, this);" title="e.g. Dursun Uçar &quot;Sen Gülersen Gül Açar&quot;">Dursun Uçar<a class=navlink href="artistprofile.html?id=5zArfwPUC7QEftAI26GA3V" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item39 preview_url="https://p.scdn.co/mp3-preview/44aa9dc5c21911402bad6de4cb3448829bce2221" class="genre scanme" scan=true style="color: #799800; top: 515px; left: 636px; font-size: 102%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;1q4v1iW7y19MyRCoO5FLeF&quot;, &quot;Fatih Demirhan&quot;, this);" title="e.g. Fatih Demirhan &quot;Söylende Gelsin&quot;">Fatih Demirhan<a class=navlink href="artistprofile.html?id=6H7sMlegMVjwRlgfmJuhoe" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item40 preview_url="https://p.scdn.co/mp3-preview/67c1c9661c8af0af4af93ead815ce307c071e727" class="genre scanme" scan=true style="color: #808826; top: 773px; left: 1379px; font-size: 101%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;5uV6IWFCNpFApz08NvyFm7&quot;, &quot;Aydın Çekiç&quot;, this);" title="e.g. Aydın Çekiç &quot;Suda Balık Oynuyor&quot;">Aydın Çekiç<a class=navlink href="artistprofile.html?id=4PruZ3X6FJMcYIKtlmPjXC" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item41 preview_url="https://p.scdn.co/mp3-preview/b8dcb66e53b7336695cf89fffd1ca6b719e710a0" class="genre scanme" scan=true style="color: #60961c; top: 750px; left: 997px; font-size: 101%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;7tjjvBgv0LM17ZHR84vMxL&quot;, &quot;Fahri Çelebi&quot;, this);" title="e.g. Fahri Çelebi &quot;Sabreden Canlar&quot;">Fahri Çelebi<a class=navlink href="artistprofile.html?id=5b1zvB5ToTcmmTFl3pLKSa" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item42 preview_url="https://p.scdn.co/mp3-preview/817c324b768ecb99b33f93eb4d37530c68b06ccc" class="genre scanme" scan=true style="color: #749e03; top: 515px; left: 240px; font-size: 101%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;1v3dIhMPfNOJBjc9AbW28Y&quot;, &quot;Devrim Kaya&quot;, this);" title="e.g. Devrim Kaya &quot;Yine Dertli Dertli&quot;">Devrim Kaya<a class=navlink href="artistprofile.html?id=41RfmZt8Y1owcVDuf7q1Xw" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item43 preview_url="https://p.scdn.co/mp3-preview/85848cf74ff6d4e7e6128aa5e0a5da511b44149e" class="genre scanme" scan=true style="color: #649605; top: 638px; left: 1280px; font-size: 101%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;7nMmE7mCWPCKTRo0OZ4nfM&quot;, &quot;Aydın Ertürk&quot;, this);" title="e.g. Aydın Ertürk &quot;O Kız Mektepten Gelirdi&quot;">Aydın Ertürk<a class=navlink href="artistprofile.html?id=51fZSIOTrcd5JRPsAyiY7i" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item44 preview_url="https://p.scdn.co/mp3-preview/9d6b2136070c3bac197efcf0c501e6b983f44839" class="genre scanme" scan=true style="color: #76a130; top: 524px; left: 1075px; font-size: 101%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;0gvx5VC9G295Utk8qa5Bsl&quot;, &quot;Erkut Özkan&quot;, this);" title="e.g. Erkut Özkan &quot;Ayva Turunç Narım Var&quot;">Erkut Özkan<a class=navlink href="artistprofile.html?id=2ZDCC10TLm3EwgXK1p1BCW" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item45 preview_url="https://p.scdn.co/mp3-preview/c6d2eb88dc08c5077f286ad4b357b9dc521c9a4b" class="genre scanme" scan=true style="color: #948b01; top: 330px; left: 1230px; font-size: 101%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;2NiOfgoKmgtHpoDT3gfG9j&quot;, &quot;Muammer Öztaş&quot;, this);" title="e.g. Muammer Öztaş &quot;Bahtı Karayım&quot;">Muammer Öztaş<a class=navlink href="artistprofile.html?id=25rYBsA7NumQVIIQLZuqWZ" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item46 preview_url="https://p.scdn.co/mp3-preview/24ac31e4f3a29f74a3b1d534d5461f507ea2ef6d" class="genre scanme" scan=true style="color: #b28b0d; top: 208px; left: 509px; font-size: 100%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;0dUN2PH225yPBALyAfLbKK&quot;, &quot;Aytuğ Özdemir&quot;, this);" title="e.g. Aytuğ Özdemir &quot;Gıratıma Bindim&quot;">Aytuğ Özdemir<a class=navlink href="artistprofile.html?id=01zcV6iS8Zmun3x98zUEAe" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item47 preview_url="https://p.scdn.co/mp3-preview/74cbfd37e9540a8c0e9bea32b0aa19e3e5b8c95e" class="genre scanme" scan=true style="color: #788048; top: 877px; left: 1336px; font-size: 100%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;3VcRfmBQdET97NJ7m63yty&quot;, &quot;Bayram Aracı&quot;, this);" title="e.g. Bayram Aracı &quot;Oyalı Yazma&quot;">Bayram Aracı<a class=navlink href="artistprofile.html?id=0EEhBSUuHofvzbopwObLQg" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item48 preview_url="https://p.scdn.co/mp3-preview/26b9c51b9bb5cdb1062b51504c28db25834b9c54" class="genre scanme" scan=true style="color: #7b8f0e; top: 488px; left: 1153px; font-size: 100%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;6vItntOiymuSKPY4pl35jW&quot;, &quot;Yasin Çakır&quot;, this);" title="e.g. Yasin Çakır &quot;Gelin Mi Oldun&quot;">Yasin Çakır<a class=navlink href="artistprofile.html?id=3aPudDQu76AiBYM0HqbolF" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item49 preview_url="https://p.scdn.co/mp3-preview/9ff60fb01591d019c989da02f3f6fbb08d36ffde" class="genre scanme" scan=true style="color: #5e980f; top: 491px; left: 728px; font-size: 100%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;1jaWkQbx3M6Ye06Bexkj8h&quot;, &quot;Ahmet Yazkan&quot;, this);" title="e.g. Ahmet Yazkan &quot;Yarin Yaylasına Seyrana Vardım&quot;">Ahmet Yazkan<a class=navlink href="artistprofile.html?id=29Gzts1YASnXtpR5JlxsfD" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item50 preview_url="https://p.scdn.co/mp3-preview/3737138253db51be22a9b9d51ed5d8ff750d11e5" class="genre scanme" scan=true style="color: #639407; top: 854px; left: 1400px; font-size: 100%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;784td7rONr9HDYYNazFTS9&quot;, &quot;Haci Tasan&quot;, this);" title="e.g. Haci Tasan &quot;Evvel Yarin Sevgilisi&quot;">Haci Tasan<a class=navlink href="artistprofile.html?id=5rm6DVuxxpoiZqrLnUqNQU" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item51 preview_url="https://p.scdn.co/mp3-preview/2a938da240c3f0a5ea49383759a06473651cfed3" class="genre scanme" scan=true style="color: #4faf18; top: 900px; left: 0px; font-size: 100%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;0eeZawe1RHycGY3dhUge5Q&quot;, &quot;Mustafa Tatlıtürk&quot;, this);" title="e.g. Mustafa Tatlıtürk &quot;Avşar Ağıtı&quot;">Mustafa Tatlıtürk<a class=navlink href="artistprofile.html?id=7LW3HIYe46mu3Kty29hA02" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item52 preview_url="https://p.scdn.co/mp3-preview/b2a0b27be40dea09de5f658ea23da6d8d46106dc" class="genre scanme" scan=true style="color: #839a0d; top: 430px; left: 933px; font-size: 100%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;67aeZ31orRkaHssNMrQoxR&quot;, &quot;Ümit Özdizlekli&quot;, this);" title="e.g. Ümit Özdizlekli &quot;Gitme Gülüm&quot;">Ümit Özdizlekli<a class=navlink href="artistprofile.html?id=4NOCxys3NHhGFj5LeGDXzX" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+<div id=item53 preview_url="https://p.scdn.co/mp3-preview/1e042e5d4375b59ba897f94bfd8602e4c3914fc2" class="genre scanme" scan=true style="color: #6f9100; top: 867px; left: 877px; font-size: 100%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;497meLpXxIzYm3x1kPjWOo&quot;, &quot;Haşim Aslıhak&quot;, this);" title="e.g. Haşim Aslıhak &quot;Vah Şimdi&quot;">Haşim Aslıhak<a class=navlink href="artistprofile.html?id=4QFxaXlm4YH2eBhsi66CDX" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" target=artistprofile>&raquo;</a> </div>
+
+</div>
+<div id=tunnel role=complementary style="width: 1600px; padding: 32px 554px 16px 554px;">
+<div class=canvas style="width: 390px; height: 460px; border: 1px solid gray; background: #FCFCFC; top: 64px">
+<div id=nearbyitem1 preview_url="https://p.scdn.co/mp3-preview/c0a19791f0d392db07293e8467cd48dd2ed51166" class="genre" scan=true style="color: #779314; top: 395px; left: 83px; font-size: 240%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;1qJmuE3BW86nEmeFMc9h4E&quot;, &quot;bozlak&quot;, this);" title="e.g. Bahri Altaş &quot;Kozan Dağı&quot;">bozlak<a class=navlink href="everynoise1d-bozlak.html" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=nearbyitem2 preview_url="https://p.scdn.co/mp3-preview/825252ac370846dd8c2d1f104705501095cdf79a" class="genre" scan=true style="color: #6f9822; top: 344px; left: 79px; font-size: 119%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;7u0qjqm3CvAd713hCnEniw&quot;, &quot;baglama&quot;, this);" title="e.g. Cem Dogan &quot;Melullenme Deli Gönül&quot;">baglama<a class=navlink href="engenremap-baglama.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=nearbyitem3 preview_url="https://p.scdn.co/mp3-preview/8a34e5df38d6d6d255373f2dd026f536982cb5b8" class="genre" scan=true style="color: #779212; top: 268px; left: 10px; font-size: 115%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;4u6nd30NTdh5sjE815I6N3&quot;, &quot;turkish folk&quot;, this);" title="e.g. Hüseyin Turan &quot;Edremit'in Gelini&quot;">turkish folk<a class=navlink href="engenremap-turkishfolk.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=nearbyitem4 preview_url="https://p.scdn.co/mp3-preview/6dbafc3b6b23015ae282b9e44a789b9bd039d01f" class="genre" scan=true style="color: #af7f0b; top: 0px; left: 300px; font-size: 107%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;0oWB1BwW5mspWx3tc1Lrjs&quot;, &quot;oyun havasi&quot;, this);" title="e.g. Özgür Koç &quot;Vur Oynasın&quot;">oyun havasi<a class=navlink href="engenremap-oyunhavasi.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=nearbyitem5 preview_url="https://p.scdn.co/mp3-preview/d7e529d95ac865c5dac36a02c4d9549e3610740a" class="genre" scan=true style="color: #70931c; top: 331px; left: 46px; font-size: 103%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;69bANX1shzz5PGbsTf66O6&quot;, &quot;classic bangla pop&quot;, this);" title="e.g. Partha Barua &quot;Mon Shudhu Mon Chhuyechhe&quot;">classic bangla pop<a class=navlink href="engenremap-classicbanglapop.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=nearbyitem6 preview_url="https://p.scdn.co/mp3-preview/8de86861b43512362a32d9e5afb72ae98a9a6a14" class="genre" scan=true style="color: #6b9007; top: 319px; left: 109px; font-size: 102%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;2W4ZxAHZAXOf6r65pCskGR&quot;, &quot;chanson&quot;, this);" title="e.g. Alain Souchon &quot;Foule sentimentale&quot;">chanson<a class=navlink href="engenremap-chanson.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=nearbyitem7 preview_url="https://p.scdn.co/mp3-preview/c2481c1728af73551f2de1b3c7fceaa593e7b8f5" class="genre" scan=true style="color: #758b07; top: 358px; left: 74px; font-size: 102%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;0DB1tWW1bAnixC5MaWuLHX&quot;, &quot;ye ye&quot;, this);" title="e.g. Nicoletta &quot;Mamy Blue&quot;">ye ye<a class=navlink href="engenremap-yeye.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=nearbyitem8 preview_url="https://p.scdn.co/mp3-preview/c31001da908ea49efc11fc625b6dd74267fd4029" class="genre" scan=true style="color: #6f9409; top: 294px; left: 56px; font-size: 102%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;151v4JOYgaXbszMMMb1yCh&quot;, &quot;nasheed&quot;, this);" title="e.g. Nazeel Azami &quot;Ya Ummi&quot;">nasheed<a class=navlink href="engenremap-nasheed.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=nearbyitem9 preview_url="https://p.scdn.co/mp3-preview/3f66042149423f04cdbbc903b4a95a3907011553" class="genre" scan=true style="color: #71901c; top: 261px; left: 131px; font-size: 102%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;70D9DOI7QR2spj2NtT1FaN&quot;, &quot;velha guarda&quot;, this);" title="e.g. Ataulfo Alves &quot;Laranja madura&quot;">velha guarda<a class=navlink href="engenremap-velhaguarda.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=nearbyitem10 preview_url="https://p.scdn.co/mp3-preview/cb904584e28563987841b29050303259b3e85ee0" class="genre" scan=true style="color: #69960e; top: 294px; left: 111px; font-size: 102%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;6jnAuVYq24jwNMG9VmtiLn&quot;, &quot;musica de intervencao&quot;, this);" title="e.g. Vitorino &quot;Queda do império&quot;">musica de intervencao<a class=navlink href="engenremap-musicadeintervencao.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=nearbyitem11 preview_url="https://p.scdn.co/mp3-preview/ad91bfc5de6c38815b77904147a31bdd8678751c" class="genre" scan=true style="color: #689826; top: 306px; left: 16px; font-size: 102%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;0Y12sZ2BwHHZZSAcaU2Bbr&quot;, &quot;neo kyma&quot;, this);" title="e.g. Kaiti Homata &quot;Mia Agapi Gia To Kalokairi&quot;">neo kyma<a class=navlink href="engenremap-neokyma.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=nearbyitem12 preview_url="https://p.scdn.co/mp3-preview/1a945309d451fa89f5a5dbd348b2bfc84ab1bf92" class="genre" scan=true style="color: #6c9204; top: 424px; left: 93px; font-size: 101%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;0uLrfjlCV5eCQcEwwmz8uX&quot;, &quot;belgian singer-songwriter&quot;, this);" title="e.g. Meskerem Mees &quot;Joe&quot;">belgian singer-songwriter<a class=navlink href="engenremap-belgiansingersongwriter.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=nearbyitem13 preview_url="https://p.scdn.co/mp3-preview/06d6db803f9abf09ef2869fa2af327905e1b6fd8" class="genre" scan=true style="color: #6d9305; top: 371px; left: 8px; font-size: 101%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;3FVpM9dyJHgiTNYcp87dId&quot;, &quot;cancion melodica&quot;, this);" title="e.g. Massiel &quot;Brindaremos por él&quot;">cancion melodica<a class=navlink href="engenremap-cancionmelodica.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=nearbyitem14 preview_url="https://p.scdn.co/mp3-preview/0d35b23c56128df2a306d706ddeb91f9b0f8fe73" class="genre" scan=true style="color: #789116; top: 219px; left: 93px; font-size: 101%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;3JqG2J1IZfXc6T5Ly86n0u&quot;, &quot;classic greek pop&quot;, this);" title="e.g. Dakis &quot;Tosa Kalokeria&quot;">classic greek pop<a class=navlink href="engenremap-classicgreekpop.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=nearbyitem15 preview_url="https://p.scdn.co/mp3-preview/d4c9aa402be3f934e38e2c54bfdd28f3e15aee79" class="genre" scan=true style="color: #738f15; top: 306px; left: 91px; font-size: 101%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;6OcXh9LUSdxh54JKhNDLP2&quot;, &quot;classic assamese pop&quot;, this);" title="e.g. Dwipen Baruah &quot;Ki Naam Di Matim&quot;">classic assamese pop<a class=navlink href="engenremap-classicassamesepop.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=nearbyitem16 preview_url="https://p.scdn.co/mp3-preview/75880e9852abb457f42976dd54de325e18d7d72a" class="genre" scan=true style="color: #788f16; top: 255px; left: 22px; font-size: 100%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;1dsdmoZjTb6xPolDsXI98h&quot;, &quot;folk cantabria&quot;, this);" title="e.g. Alegría Cántabra &quot;Dónde Vas Morenuca&quot;">folk cantabria<a class=navlink href="engenremap-folkcantabria.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=nearbyitem17 preview_url="https://p.scdn.co/mp3-preview/3cf978ee04af518a2eb6cd2e7e7859ce2ef4865c" class="genre" scan=true style="color: #68940e; top: 243px; left: 105px; font-size: 100%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;44QZCcZOomoec6FVJI5Qb2&quot;, &quot;musica timor-leste&quot;, this);" title="e.g. Tonny Pareira, Elder D. Araujo &quot;O Rai Timor&quot;">musica timor-leste<a class=navlink href="engenremap-musicatimorleste.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=nearbyitem18 preview_url="https://p.scdn.co/mp3-preview/634ce1a46a03fe4eab06cc5d54ded504feaeef69" class="genre" scan=true style="color: #6f930b; top: 207px; left: 105px; font-size: 100%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;7p40ClatdXb2ZG1o29ODP2&quot;, &quot;sung poetry&quot;, this);" title="e.g. Wojciech Młynarski &quot;Nie ma jak u mamy&quot;">sung poetry<a class=navlink href="engenremap-sungpoetry.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=nearbyitem19 preview_url="https://p.scdn.co/mp3-preview/87581146af1065a1e2e7044fb7e9f7deee991a37" class="genre" scan=true style="color: #6f9429; top: 282px; left: 0px; font-size: 100%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;6eco7d0bNN7iQWTaUW3qdf&quot;, &quot;classic persian pop&quot;, this);" title="e.g. Sattar &quot;Shazdeh Khanoom&quot;">classic persian pop<a class=navlink href="engenremap-classicpersianpop.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=nearbyitem20 preview_url="https://p.scdn.co/mp3-preview/876f63f523785d9613fc6be7d235140e9162eaab" class="genre" scan=true style="color: #688704; top: 383px; left: 46px; font-size: 100%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;3adLkKm3qlM85mzQMdOoyB&quot;, &quot;south african choral&quot;, this);" title="e.g. Soweto Gospel Choir &quot;Shosholoza&quot;">south african choral<a class=navlink href="engenremap-southafricanchoral.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=nearbyitem21 preview_url="https://p.scdn.co/mp3-preview/e4328660133645adbc7431e19a8a7825aed997ce" class="genre" scan=true style="color: #719628; top: 231px; left: 68px; font-size: 100%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;7ipCqCAHvwZkzSgAe7qquc&quot;, &quot;autoharp&quot;, this);" title="e.g. Bryan Bowers &quot;The Scotsman - Live At The Winfield National Flat Picking Festival&quot;">autoharp<a class=navlink href="engenremap-autoharp.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+</div></div>
+<div id=mirror role=complementary style="width: 1600px; padding: 32px 554px 16px 554px;">
+<div class=canvas style="width: 390px; height: 337px; border: 1px solid gray; background: #404040; top: 64px">
+<div id=mirroritem1 preview_url="https://p.scdn.co/mp3-preview/e7cd0073553eb32bb0d823a7f27e1c591a7b3a89" class="genre" scan=true style="color: #e8bcb7; top: 106px; left: 143px; font-size: 160%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;4s5HHU7R2gIwDAXSb50LFY&quot;, &quot;dutch trance&quot;, this);" title="e.g. Re:Locate &quot;Resource - ReChill&quot;">dutch trance<a class=navlink href="engenremap-dutchtrance.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=mirroritem2 preview_url="https://p.scdn.co/mp3-preview/b9281964b5883fe9bed5c7072a277a8b9c0b50df" class="genre" scan=true style="color: #dfbca5; top: 142px; left: 77px; font-size: 148%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;2oDqmfa2g8W893LlwJG1qu&quot;, &quot;electronic rock&quot;, this);" title="e.g. Nine Inch Nails &quot;Closer&quot;">electronic rock<a class=navlink href="engenremap-electronicrock.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=mirroritem3 preview_url="https://p.scdn.co/mp3-preview/5e28fa95dc56c171145a0349174e8195ce0fb469" class="genre" scan=true style="color: #e5b8b1; top: 31px; left: 115px; font-size: 147%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;6GngTlNeYAXE0v0U3Xd3aI&quot;, &quot;ebm&quot;, this);" title="e.g. Leæther Strip &quot;Strap Me Down&quot;">ebm<a class=navlink href="engenremap-ebm.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=mirroritem4 preview_url="https://p.scdn.co/mp3-preview/e015ea09e3afbcde697903b5111178b808ed61e5" class="genre" scan=true style="color: #dcc0b5; top: 208px; left: 87px; font-size: 138%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;7aux5UvnlBDYlrlwoczifW&quot;, &quot;bitpop&quot;, this);" title="e.g. Anamanaguchi &quot;Miku&quot;">bitpop<a class=navlink href="engenremap-bitpop.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=mirroritem5 preview_url="https://p.scdn.co/mp3-preview/38b1fa316b5fcf5ec83ffdf4c68e167b054e5ff3" class="genre" scan=true style="color: #dec0af; top: 125px; left: 194px; font-size: 138%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;6h9ZvRuv1ASTdoEBG0HjlA&quot;, &quot;christian dance&quot;, this);" title="e.g. David Thulin &quot;Light In Me - Chris Howland Remix&quot;">christian dance<a class=navlink href="engenremap-christiandance.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=mirroritem6 preview_url="https://p.scdn.co/mp3-preview/eb3b616191473ff10eb0cdc0f1496521ba216da0" class="genre" scan=true style="color: #d6bca5; top: 231px; left: 196px; font-size: 138%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;09uuSsYh4Gti5Ek6kUh17G&quot;, &quot;belgian new wave&quot;, this);" title="e.g. TC Matic &quot;O La La La&quot;">belgian new wave<a class=navlink href="engenremap-belgiannewwave.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=mirroritem7 preview_url="https://p.scdn.co/mp3-preview/760c8b368e9060b974bbf5c65c4f5679f48ab802" class="genre" scan=true style="color: #e4b5c0; top: 287px; left: 187px; font-size: 135%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;7FiNxaNRHHnpZXY4D4JhqK&quot;, &quot;deep breakcore&quot;, this);" title="e.g. Autonon &quot;Cisplatin&quot;">deep breakcore<a class=navlink href="engenremap-deepbreakcore.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=mirroritem8 preview_url="https://p.scdn.co/mp3-preview/53f30d028a338d610c13fe478c45f6605c373661" class="genre" scan=true style="color: #e1bdba; top: 142px; left: 253px; font-size: 132%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;7Jj9ygPtg5IzRzX9cfeI80&quot;, &quot;dubstep product&quot;, this);" title="e.g. The Anix &quot;Spit You Out&quot;">dubstep product<a class=navlink href="engenremap-dubstepproduct.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=mirroritem9 preview_url="https://p.scdn.co/mp3-preview/af27f0b7c1dd071094e0042a1c85de11513c132c" class="genre" scan=true style="color: #d7bfbc; top: 197px; left: 200px; font-size: 130%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;4YtEA63UG4trqJ6MZoBZsc&quot;, &quot;minimal wave&quot;, this);" title="e.g. Linear Movement &quot;Night in June&quot;">minimal wave<a class=navlink href="engenremap-minimalwave.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=mirroritem10 preview_url="https://p.scdn.co/mp3-preview/4bc44bfc91a9ad7d774714ee7a8eebabb9970c6e" class="genre" scan=true style="color: #debdb0; top: 240px; left: 0px; font-size: 127%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;4PzCufqO0vE0nLPVcX1Jcc&quot;, &quot;post-punk colombiano&quot;, this);" title="e.g. Hipsum &quot;Sueños en Rosa Reverberado&quot;">post-punk colombiano<a class=navlink href="engenremap-postpunkcolombiano.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=mirroritem11 preview_url="https://p.scdn.co/mp3-preview/f5116c8aefb7c756b56f933283d19eb59c14b7aa" class="genre" scan=true style="color: #e1bcba; top: 90px; left: 277px; font-size: 124%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;56jlrdCvA7Ih13L9OMcfDS&quot;, &quot;big beat&quot;, this);" title="e.g. Propellerheads &quot;History Repeating - Knee Length Mix&quot;">big beat<a class=navlink href="engenremap-bigbeat.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=mirroritem12 preview_url="https://p.scdn.co/mp3-preview/704b4ddb7afe9346a76723d741b75d5fb41ae10a" class="genre" scan=true style="color: #e0ba9f; top: 225px; left: 91px; font-size: 119%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;7wg5h9uqPvRngy5WUQKlAs&quot;, &quot;dance-punk&quot;, this);" title="e.g. The Rapture &quot;Echoes&quot;">dance-punk<a class=navlink href="engenremap-dancepunk.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=mirroritem13 preview_url="https://p.scdn.co/mp3-preview/6f63f8569484579e47ba3f479a7b4c71c326c218" class="genre" scan=true style="color: #e7b6b5; top: 0px; left: 96px; font-size: 113%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;4PYpMLZwzqJbQBlUrz3j0J&quot;, &quot;electro-industrial&quot;, this);" title="e.g. Decoded Feedback &quot;Phoenix&quot;">electro-industrial<a class=navlink href="engenremap-electroindustrial.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=mirroritem14 preview_url="https://p.scdn.co/mp3-preview/c8cf98befeca6f8584324f5ad74bf9fa2286de9b" class="genre" scan=true style="color: #e4b3c8; top: 269px; left: 202px; font-size: 112%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;5taH4EtIKoVksnO8zomhrk&quot;, &quot;breakcore&quot;, this);" title="e.g. Ladyscraper &quot;My Gums Bleed For This Type Of Shit&quot;">breakcore<a class=navlink href="engenremap-breakcore.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=mirroritem15 preview_url="https://p.scdn.co/mp3-preview/9f18c46f531313e319ff8db9554268e7bb1c586a" class="genre" scan=true style="color: #e7beb7; top: 65px; left: 147px; font-size: 112%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;3VAL6L8LabUNGKt6ng0LfH&quot;, &quot;progressive house&quot;, this);" title="e.g. Maor Levi &quot;Let You Go&quot;">progressive house<a class=navlink href="engenremap-progressivehouse.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=mirroritem16 preview_url="https://p.scdn.co/mp3-preview/c7483111af7b2478579f4de6383820df4936ecc6" class="genre" scan=true style="color: #dcbfa7; top: 160px; left: 232px; font-size: 105%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;0FezhHZVmDYXvk8jAr2fpU&quot;, &quot;alternative dance&quot;, this);" title="e.g. Cut Copy &quot;Lights &amp; Music&quot;">alternative dance<a class=navlink href="engenremap-alternativedance.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=mirroritem17 preview_url="https://p.scdn.co/mp3-preview/b7d7faea0a27615f955b296d66edbbfad2e72007" class="genre" scan=true style="color: #d2bec7; top: 300px; left: 81px; font-size: 103%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;2zSpaFB7e0Yo1QKsDQ22Ol&quot;, &quot;wrestling&quot;, this);" title="e.g. WWE &quot;The Game (Triple H)&quot;">wrestling<a class=navlink href="engenremap-wrestling.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=mirroritem18 preview_url="https://p.scdn.co/mp3-preview/0a44cc45188ec2f66a779b1f2f95b7d48241198a" class="genre" scan=true style="color: #e5bea8; top: 185px; left: 134px; font-size: 102%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;7BIFJ3tHxrU28sBICphJQY&quot;, &quot;kawaii future bass&quot;, this);" title="e.g. KOTONOHOUSE &quot;センチメンタリズム - feat. 芹澤 優&quot;">kawaii future bass<a class=navlink href="engenremap-kawaiifuturebass.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=mirroritem19 preview_url="https://p.scdn.co/mp3-preview/551fa43f4dc5cf78435eb1ed2de49faa2bb1398e" class="genre" scan=true style="color: #dac1a3; top: 173px; left: 157px; font-size: 101%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;3pzeBXcv4FNQfVnnPbsTh9&quot;, &quot;neo-synthpop&quot;, this);" title="e.g. Rupesh Cartel &quot;Embers&quot;">neo-synthpop<a class=navlink href="engenremap-neosynthpop.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+<div id=mirroritem20 preview_url="https://p.scdn.co/mp3-preview/30e05d5adcbfd1ce27cc8c7ca5d27d572a79b5d5" class="genre" scan=true style="color: #e0b9b6; top: 78px; left: 300px; font-size: 100%" role=button tabindex=0 onKeyDown="kb(event);" onclick="playx(&quot;2s0lndhJ7f1Sg1oChArGmD&quot;, &quot;new beat&quot;, this);" title="e.g. A Split Second &quot;Flesh&quot;">new beat<a class=navlink href="engenremap-newbeat.html#tunnel" role=button tabindex=0 onKeyDown="kb(event);" onclick="event.stopPropagation();" >&raquo;</a> </div>
+
+</div></div>
+<div role=complementary style="text-align: center; width: 1500px; margin-top: 96px; color: gray">
+<a href="https://twitter.com/everynoise" target=twitter>@EveryNoise</a> &middot;&nbsp; 
+<a href="http://furia.com" target=furia>glenn mcdonald</a>
+</div>
+<div role=complementary style="margin: 16px 554px; width: 390px; text-align: justify; color: gray; display: table">
+Every Noise at Once was a long-running attempt at an algorithmically-generated, readability-adjusted scatter-plot of the musical genre-space, based on data tracked and analyzed for 6,291 genre-shaped distinctions at Spotify through 2023-11-19.
+The calibration is fuzzy, but in general down is more organic, up is more mechanical and electric; left is denser and more atmospheric, right is spikier and bouncier.<br>
+&nbsp;<br>Click anything to hear an example of what it sounds like.<br>
+&nbsp;<br>Click the &raquo; on an artist to see their Spotify catalog.<br>
+</div>
+
+<center class="sigil" title=s3><br>☊<br>
+<div class="display: none"><audio controls="controls" id=spotifyplayer style="visibility: hidden"></audio></div>
+</center>
+</body>
+</html>
+
