@@ -15,6 +15,10 @@ on:
         description: 'Scrape only N random genres (fixed seed). Leave empty for the full batch.'
         required: false
         default: ''
+      debug_slug:
+        description: 'Debug mode: download the raw HTML of engenremap-<slug>.html and commit it as debug/<slug>.html on the data branch (no scraping).'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -49,7 +53,20 @@ jobs:
             echo "No previous scrape branch — starting fresh."
           fi
 
+      - name: Download raw debug page
+        if: inputs.debug_slug != ''
+        env:
+          DEBUG_SLUG: ${{ inputs.debug_slug }}
+        run: |
+          mkdir -p debug
+          curl -fsS --retry 2 \
+            -A "genre-explorer/1.0 (one-time batch; https://github.com/Bu-chip/genre-explorer; mborrajor@gmail.com)" \
+            -o "debug/${DEBUG_SLUG}.html" \
+            "https://everynoise.com/engenremap-${DEBUG_SLUG}.html"
+          wc -c "debug/${DEBUG_SLUG}.html"
+
       - name: Run scraper
+        if: inputs.debug_slug == ''
         run: |
           ARGS=""
           if [ -n "${{ inputs.sample }}" ]; then
@@ -70,15 +87,20 @@ jobs:
           cd /tmp/data-branch
           git checkout -B "$DATA_BRANCH"
 
-          mkdir -p public/data/genres data
+          mkdir -p public/data/genres data debug
           if [ -d "$GITHUB_WORKSPACE/public/data/genres" ]; then
             cp -r "$GITHUB_WORKSPACE"/public/data/genres/. public/data/genres/
           fi
+          if [ -d "$GITHUB_WORKSPACE/debug" ]; then
+            cp -r "$GITHUB_WORKSPACE"/debug/. debug/
+          fi
           for f in everynoise_coverage.json everynoise_errors.json; do
-            [ -f "$GITHUB_WORKSPACE/data/$f" ] && cp "$GITHUB_WORKSPACE/data/$f" data/
+            if [ -f "$GITHUB_WORKSPACE/data/$f" ]; then
+              cp "$GITHUB_WORKSPACE/data/$f" data/
+            fi
           done
 
-          git add public/data/genres data/everynoise_coverage.json data/everynoise_errors.json
+          git add public/data/genres data debug
           if git diff --cached --quiet; then
             echo "Nothing new to commit."
             exit 0
@@ -97,9 +119,15 @@ jobs:
 
       - name: Report coverage in summary
         if: always()
+        env:
+          DEBUG_SLUG: ${{ inputs.debug_slug }}
         run: |
-          python scripts/scrape-everynoise-artists.py --report >> "$GITHUB_STEP_SUMMARY"
-          {
-            echo ""
-            echo "Output committed to branch \`$DATA_BRANCH\`."
-          } >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "$DEBUG_SLUG" ]; then
+            echo "Debug run: raw page committed as \`debug/${DEBUG_SLUG}.html\` on \`$DATA_BRANCH\`." >> "$GITHUB_STEP_SUMMARY"
+          else
+            python scripts/scrape-everynoise-artists.py --report >> "$GITHUB_STEP_SUMMARY"
+            {
+              echo ""
+              echo "Output committed to branch \`$DATA_BRANCH\`."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
