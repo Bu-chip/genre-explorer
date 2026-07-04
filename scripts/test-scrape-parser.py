@@ -18,6 +18,8 @@ Dependencies: same as the scraper (beautifulsoup4).
 import importlib.util
 from pathlib import Path
 
+import requests
+
 spec = importlib.util.spec_from_file_location(
     "scraper", Path(__file__).with_name("scrape-everynoise-artists.py"))
 scraper = importlib.util.module_from_spec(spec)
@@ -72,6 +74,28 @@ def main():
     assert scraper.url_slug_candidates("lgbtq+ hip hop") == ["lgbtqhiphop"]
     # the index's one mojibake name: repaired+transliterated tried first
     assert scraper.url_slug_candidates("mÃºsica pitiusa")[0] == "musicapitiusa"
+
+    # fetch() must decode pages as utf-8: EveryNoise sends Content-Type
+    # WITHOUT charset (utf-8 is declared only in the <meta> tag), which makes
+    # requests fall back to ISO-8859-1 — Neşet Ertaş became NeÅŸet ErtaÅŸ and
+    # Japanese names (48g: ノースリーブス) turned to garbage in the first batch.
+    page = "<html><body>Neşet Ertaş / ノースリーブス</body></html>"
+    resp = requests.Response()
+    resp.status_code = 200
+    resp._content = page.encode("utf-8")
+    resp.headers["Content-Type"] = "text/html"  # no charset, like everynoise.com
+    # Session.send() sets this from the headers; a hand-built Response skips
+    # that step and .text would silently fall back to charset autodetection.
+    resp.encoding = requests.utils.get_encoding_from_headers(resp.headers)
+    assert resp.encoding == "ISO-8859-1", resp.encoding  # the footgun is armed
+
+    class FakeSession:
+        def get(self, url, **kwargs):
+            return resp
+
+    html, status = scraper.fetch(FakeSession(), "https://everynoise.com/x.html")
+    assert status == 200
+    assert "Neşet Ertaş" in html and "ノースリーブス" in html, html[:80]
 
     print("ALL PARSER TESTS PASSED")
 
