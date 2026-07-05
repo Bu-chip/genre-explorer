@@ -13,9 +13,8 @@ import { NavBar } from './components/NavBar'
 import { GenreName, GenreDescription } from './components/GenreCard'
 import { WikipediaCard } from './components/WikipediaCard'
 import { ListenLinks } from './components/ListenLinks'
-import { DeezerPreview } from './components/DeezerPreview'
+import { TasteOfGenre } from './components/TasteOfGenre'
 import { NearbyGenres } from './components/NearbyGenres'
-import { GenreArtists } from './components/GenreArtists'
 import { RelatedGenres } from './components/RelatedGenres'
 import { ShareButton } from './components/ShareButton'
 import { FavoriteButton } from './components/FavoriteButton'
@@ -179,13 +178,13 @@ function App() {
   }, [genres, selectedGenre])
 
   const lastfm = useLastfm(selectedGenre?.name)
-  const track = useTrack(selectedGenre?.name)
   const wikipedia = useWikipedia(selectedGenre?.name)
-  const detail = useGenreDetail(selectedGenre?.slug)
+  const { detail, loaded: detailLoaded } = useGenreDetail(selectedGenre?.slug)
 
-  // A track resolved from an artist click overrides the genre cascade's
-  // pick in the player until the next genre loads.
-  const [artistTrack, setArtistTrack] = useState(null)
+  // The player is fed by the genre's own artist list; the old by-tag
+  // cascade only runs for the few genres whose list is empty.
+  const needsFallbackTrack = detailLoaded && !detail?.artists?.length
+  const fallbackTrack = useTrack(needsFallbackTrack ? selectedGenre?.name : null)
   const { favorites, isFavorite, toggleFavorite, clearFavorites } = useFavorites()
 
   const genreIndex = useMemo(() => {
@@ -212,7 +211,6 @@ function App() {
       cyclingRef.current = false
     }
     setSpinDisplay(null)
-    setArtistTrack(null)
     setSelectedGenre(genre)
     setHeaderVisible(false)
     window.location.hash = `genre=${genre.slug}`
@@ -251,7 +249,6 @@ function App() {
         cyclingTimerRef.current = null
         cyclingRef.current = false
         setSpinDisplay(null)
-        setArtistTrack(null)
         setSelectedGenre(genre)
       }
     }, CYCLE_TICK)
@@ -363,11 +360,11 @@ function App() {
             </div>
 
             <div className="discovery-preview">
-              <DeezerPreview
-                artist={artistTrack?.artist ?? track?.artist}
-                track={artistTrack?.title ?? track?.title}
-                preview={artistTrack ? artistTrack.preview : track?.preview}
-                cover={artistTrack ? artistTrack.cover : track?.cover}
+              <TasteOfGenre
+                key={selectedGenre.slug}
+                artists={detail?.artists}
+                artistsLoaded={detailLoaded}
+                fallbackTrack={fallbackTrack}
               />
             </div>
 
@@ -393,11 +390,6 @@ function App() {
                 <div className="exploration-grid">
                   <GenreDescription lastfm={lastfm} />
                   <WikipediaCard wikipedia={wikipedia} />
-                  <GenreArtists
-                    key={selectedGenre.slug}
-                    artists={detail?.artists}
-                    onTrack={setArtistTrack}
-                  />
                   <RelatedGenres
                     related={detail?.related}
                     allGenres={genres}

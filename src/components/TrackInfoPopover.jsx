@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import './TrackInfoPopover.css'
 
 const DISCLAIMER =
-  "Tracks pulled automatically from Last.fm, Deezer or iTunes. Some won't fit. Genres are labels, not boxes."
+  "Tracks come from this genre's own artists (via EveryNoise), previewed through Deezer or iTunes. Some won't fit. Genres are labels, not boxes."
 
 export function TrackInfoPopover() {
   const [open, setOpen] = useState(false)
