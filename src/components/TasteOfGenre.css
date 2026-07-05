@@ -94,13 +94,23 @@
 .taste__track {
   font-family: var(--font-body);
   font-size: var(--text-sm);
-  color: var(--gray-300);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   margin: 0 0 var(--space-3);
   opacity: 1;
   transition: opacity 300ms ease;
+}
+
+/* The artist carries the line; the track title reads as its shadow. */
+.taste__artist {
+  font-weight: var(--font-weight-regular);
+  color: var(--gray-100);
+}
+
+.taste__title {
+  font-weight: var(--font-weight-light);
+  color: var(--gray-400);
 }
 
 .taste__fade--out {

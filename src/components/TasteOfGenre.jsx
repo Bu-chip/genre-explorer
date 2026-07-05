@@ -218,8 +218,10 @@ function TastePlayer({ display, statusText, action, fading, onPlayingChange, onI
         </button>
         <div className="taste__info">
           <p className={`taste__track${fadeClass}`}>
-            {display.name}
-            {display.title && <> &mdash; {display.title}</>}
+            <span className="taste__artist">{display.name}</span>
+            {display.title && (
+              <span className="taste__title"> &mdash; {display.title}</span>
+            )}
           </p>
           <div className="taste__bar" onClick={handleBarClick}>
             <div className="taste__fill" style={{ width: `${progress * 100}%` }} />
