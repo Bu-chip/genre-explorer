@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { getRelatedGenres } from '../utils/nearest'
 import './NearbyGenres.css'
 
-function GenreChips({ items, onSelect }) {
+export function GenreChips({ items, onSelect }) {
   return (
     <div className="related__chips">
       {items.map(({ genre: g }) => (

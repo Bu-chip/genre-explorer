@@ -4,6 +4,7 @@ import { useGenres } from './hooks/useGenres'
 import { useLastfm } from './hooks/useLastfm'
 import { useTrack } from './hooks/useTrack'
 import { useWikipedia } from './hooks/useWikipedia'
+import { useGenreDetail } from './hooks/useGenreDetail'
 import { useFavorites } from './hooks/useFavorites'
 import { getRarityScore } from './utils/rarityScore'
 import { getPhrase } from './utils/phrases'
@@ -14,6 +15,8 @@ import { WikipediaCard } from './components/WikipediaCard'
 import { ListenLinks } from './components/ListenLinks'
 import { DeezerPreview } from './components/DeezerPreview'
 import { NearbyGenres } from './components/NearbyGenres'
+import { GenreArtists } from './components/GenreArtists'
+import { RelatedGenres } from './components/RelatedGenres'
 import { ShareButton } from './components/ShareButton'
 import { FavoriteButton } from './components/FavoriteButton'
 import { DiscoveryCounter } from './components/DiscoveryCounter'
@@ -178,6 +181,11 @@ function App() {
   const lastfm = useLastfm(selectedGenre?.name)
   const track = useTrack(selectedGenre?.name)
   const wikipedia = useWikipedia(selectedGenre?.name)
+  const detail = useGenreDetail(selectedGenre?.slug)
+
+  // A track resolved from an artist click overrides the genre cascade's
+  // pick in the player until the next genre loads.
+  const [artistTrack, setArtistTrack] = useState(null)
   const { favorites, isFavorite, toggleFavorite, clearFavorites } = useFavorites()
 
   const genreIndex = useMemo(() => {
@@ -204,6 +212,7 @@ function App() {
       cyclingRef.current = false
     }
     setSpinDisplay(null)
+    setArtistTrack(null)
     setSelectedGenre(genre)
     setHeaderVisible(false)
     window.location.hash = `genre=${genre.slug}`
@@ -242,6 +251,7 @@ function App() {
         cyclingTimerRef.current = null
         cyclingRef.current = false
         setSpinDisplay(null)
+        setArtistTrack(null)
         setSelectedGenre(genre)
       }
     }, CYCLE_TICK)
@@ -354,10 +364,10 @@ function App() {
 
             <div className="discovery-preview">
               <DeezerPreview
-                artist={track?.artist}
-                track={track?.title}
-                preview={track?.preview}
-                cover={track?.cover}
+                artist={artistTrack?.artist ?? track?.artist}
+                track={artistTrack?.title ?? track?.title}
+                preview={artistTrack ? artistTrack.preview : track?.preview}
+                cover={artistTrack ? artistTrack.cover : track?.cover}
               />
             </div>
 
@@ -383,6 +393,16 @@ function App() {
                 <div className="exploration-grid">
                   <GenreDescription lastfm={lastfm} />
                   <WikipediaCard wikipedia={wikipedia} />
+                  <GenreArtists
+                    key={selectedGenre.slug}
+                    artists={detail?.artists}
+                    onTrack={setArtistTrack}
+                  />
+                  <RelatedGenres
+                    related={detail?.related}
+                    allGenres={genres}
+                    onSelect={handleResult}
+                  />
                   <NearbyGenres
                     genre={selectedGenre}
                     allGenres={genres}
