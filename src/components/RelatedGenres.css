@@ -1,0 +1,6 @@
+.related-genres {
+  width: 100%;
+  max-width: 65ch;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
