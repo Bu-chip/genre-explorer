@@ -1,6 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { fetchTrackByArtist } from '../utils/artistSearch'
 import './GenreArtists.css'
+
+const ROTATE_EVERY_MS = 2500
+const ROTATE_FADE_MS = 300
 
 function pad(n) {
   return String(n).padStart(2, '0')
@@ -20,68 +23,116 @@ function Chevron({ open }) {
   )
 }
 
-// Dial + list. One artist visible at a time with a "next" control to tune
-// through the ranking; the chevron unfolds the full list. Clicking any name
-// searches Deezer (then iTunes) by artist and hands the track up to the
-// player via onTrack.
+// Dial + list. The big name is the single source of truth: it is what plays
+// (or will play on tap). NEXT advances the dial AND plays; a name tapped in
+// the unfolded list comes to the dial AND plays. Until the first
+// interaction the dial idles through the ranking with an opacity-only
+// crossfade — no audio, stopped for good (per genre) once the user touches
+// anything, and skipped entirely under prefers-reduced-motion.
 export function GenreArtists({ artists, onTrack }) {
   const [index, setIndex] = useState(0)
   const [expanded, setExpanded] = useState(false)
+  const [interacted, setInteracted] = useState(false)
+  const [fading, setFading] = useState(false)
   const [busyName, setBusyName] = useState(null)
   const [failedName, setFailedName] = useState(null)
-  const [playingName, setPlayingName] = useState(null)
+  const requestRef = useRef(0)
+  const aliveRef = useRef(true)
 
-  if (!artists?.length) return null
+  const count = artists?.length ?? 0
 
-  const current = artists[index % artists.length]
+  useEffect(() => {
+    aliveRef.current = true
+    return () => {
+      aliveRef.current = false
+    }
+  }, [])
+
+  // Idle rotation: tick every ROTATE_EVERY_MS while untouched.
+  useEffect(() => {
+    if (interacted || count < 2) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const interval = setInterval(() => setFading(true), ROTATE_EVERY_MS)
+    return () => clearInterval(interval)
+  }, [interacted, count])
+
+  // Second half of the crossfade: once the name has faded out, swap name
+  // and counter in the same instant, then let opacity ease back in.
+  useEffect(() => {
+    if (!fading) return
+    const timeout = setTimeout(() => {
+      setIndex((i) => (i + 1) % count)
+      setFading(false)
+    }, ROTATE_FADE_MS)
+    return () => clearTimeout(timeout)
+  }, [fading, count])
+
+  if (!count) return null
+
+  const current = artists[index % count]
+
+  const markInteracted = () => {
+    setInteracted(true)
+    setFading(false)
+  }
 
   const play = async (artist) => {
-    if (busyName) return
+    const request = ++requestRef.current
     setFailedName(null)
     setBusyName(artist.name)
     const result = await fetchTrackByArtist(artist.name)
+    if (!aliveRef.current || request !== requestRef.current) return
     setBusyName(null)
     if (result) {
-      setPlayingName(artist.name)
       onTrack(result)
     } else {
       setFailedName(artist.name)
     }
   }
 
-  const next = () => {
-    setFailedName(null)
-    setIndex((i) => (i + 1) % artists.length)
+  const playCurrent = () => {
+    markInteracted()
+    play(current)
   }
 
-  const nameState = (name) => {
-    if (name === busyName) return 'artists__name-btn--busy'
-    if (name === playingName) return 'artists__name-btn--playing'
-    return ''
+  const next = () => {
+    markInteracted()
+    const nextIndex = (index + 1) % count
+    setIndex(nextIndex)
+    play(artists[nextIndex])
+  }
+
+  const playFromList = (artist, i) => {
+    markInteracted()
+    setIndex(i)
+    play(artist)
+  }
+
+  const toggleList = () => {
+    markInteracted()
+    setExpanded((e) => !e)
   }
 
   const status = busyName
     ? `tuning in ${busyName}...`
     : failedName
       ? `no preview found for ${failedName}`
-      : playingName
-        ? `now playing ${playingName}`
-        : ' '
+      : ' '
 
   return (
     <div className="artists">
       <div className="artists__header">
         <h3 className="artists__title">artists</h3>
         <span className="artists__counter">
-          {pad((index % artists.length) + 1)} / {pad(artists.length)}
+          {pad((index % count) + 1)} / {pad(count)}
         </span>
       </div>
 
       <div className="artists__dial">
         <button
           type="button"
-          className={`artists__name-btn artists__dial-name ${nameState(current.name)}`}
-          onClick={() => play(current)}
+          className={`artists__dial-name ${fading ? 'artists__dial-name--fading' : ''}`}
+          onClick={playCurrent}
           aria-label={`Play a track by ${current.name}`}
         >
           {current.name}
@@ -90,7 +141,7 @@ export function GenreArtists({ artists, onTrack }) {
           type="button"
           className="artists__next"
           onClick={next}
-          aria-label="Next artist"
+          aria-label="Next artist, play a track"
         >
           next
         </button>
@@ -101,20 +152,20 @@ export function GenreArtists({ artists, onTrack }) {
       <button
         type="button"
         className="artists__toggle"
-        onClick={() => setExpanded((e) => !e)}
+        onClick={toggleList}
         aria-expanded={expanded}
       >
-        all {artists.length} artists <Chevron open={expanded} />
+        all {count} artists <Chevron open={expanded} />
       </button>
 
       {expanded && (
         <ul className="artists__list">
-          {artists.map((artist) => (
+          {artists.map((artist, i) => (
             <li key={artist.id || artist.name} className="artists__item">
               <button
                 type="button"
-                className={`artists__name-btn artists__item-btn ${nameState(artist.name)}`}
-                onClick={() => play(artist)}
+                className={`artists__item-btn ${i === index ? 'artists__item-btn--current' : ''}`}
+                onClick={() => playFromList(artist, i)}
                 aria-label={`Play a track by ${artist.name}`}
               >
                 {artist.name}
