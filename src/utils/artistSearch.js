@@ -27,6 +27,24 @@ async function fetchJson(url, { warn = false } = {}) {
   }
 }
 
+// Resolve a preview for a known artist + title pair (tag-cascade hits from
+// Last.fm / iTunes only carry names). Deezer search, direct then proxied.
+// Returns { artist, title, preview, cover } or null.
+export async function fetchPreviewForTrack(artistName, trackTitle) {
+  const url =
+    `${DEEZER_SEARCH}?q=${encodeURIComponent(`${artistName} ${trackTitle}`)}&limit=1`
+  let data = await fetchJson(url)
+  if (!data) data = await fetchJson(deezerProxyUrl(url), { warn: true })
+  const t = data?.data?.[0]
+  if (!t?.preview) return null
+  return {
+    artist: t.artist?.name || artistName,
+    title: t.title || trackTitle,
+    preview: t.preview,
+    cover: t.album?.cover_medium || undefined,
+  }
+}
+
 // Find a playable track for an artist name: Deezer artist search (direct,
 // then via the Cloudflare Worker proxy), falling back to iTunes. Always
 // searches by artist, never by genre tag. Returns

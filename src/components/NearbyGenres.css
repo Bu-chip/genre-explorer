@@ -1,22 +1,14 @@
-.related {
+.nearby {
+  width: 100%;
   max-width: 65ch;
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
+  padding: 0 var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
 }
 
-@media (max-width: 520px) {
-  .related {
-    grid-template-columns: 1fr;
-  }
-}
-
-.related__col {
-  padding: var(--space-5) var(--space-4);
-}
-
-.related__title {
+.nearby__title {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   font-weight: var(--font-weight-regular);
@@ -26,35 +18,64 @@
   margin: 0 0 var(--space-3);
 }
 
-.related__chips {
+.nearby__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.nearby__list--far {
   gap: var(--space-2);
 }
 
-.related__chip {
-  display: inline-flex;
-  align-items: center;
-  padding: var(--space-1) var(--space-3);
-  background: transparent;
-  border: 1px solid var(--gray-700);
+/* CLOSE — compact mono list, quieter than the RELATED paragraph. */
+.nearby__close-link {
+  background: none;
+  border: none;
+  padding: 0;
   cursor: pointer;
-  transition: border-color 150ms ease, background-color 150ms ease;
-}
-
-.related__chip:hover {
-  border-color: var(--chip-color);
-  background: color-mix(in srgb, var(--chip-color) 10%, transparent);
-}
-
-.related__name {
-  font-family: var(--font-body);
+  text-align: left;
+  font-family: var(--font-mono);
   font-size: var(--text-sm);
-  color: color-mix(in srgb, var(--chip-color) 60%, var(--gray-500));
-  white-space: nowrap;
+  color: color-mix(in srgb, var(--genre-color) 45%, var(--gray-400));
   transition: color 150ms ease;
 }
 
-.related__chip:hover .related__name {
-  color: var(--chip-color);
+.nearby__close-link:hover,
+.nearby__close-link:focus-visible {
+  color: var(--genre-color);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* FAR — jump tickets: arrow + destination in its own color. */
+.nearby__jump {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  letter-spacing: 0.04em;
+}
+
+.nearby__jump-arrow {
+  color: var(--gray-500);
+}
+
+.nearby__jump-name {
+  color: var(--genre-color);
+}
+
+.nearby__jump:hover .nearby__jump-name,
+.nearby__jump:focus-visible .nearby__jump-name {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }

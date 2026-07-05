@@ -1,0 +1,304 @@
+.taste {
+  margin: 0 0 var(--space-6);
+  max-width: 100%;
+  min-width: 0;
+}
+
+.taste__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.taste__label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: color-mix(in srgb, var(--qcr-lime) 30%, transparent);
+  margin: 0;
+}
+
+.taste__counter {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--gray-500);
+  letter-spacing: 0.1em;
+  flex-shrink: 0;
+}
+
+.taste__player {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.taste__cover-slot {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  background: var(--gray-800);
+  opacity: 1;
+  transition: opacity 300ms ease;
+}
+
+.taste__cover {
+  display: block;
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  filter: saturate(0.55);
+}
+
+.taste__play {
+  /* Explicit box: WebKit resolves the intrinsic size of an attribute-sized
+     svg inside an unsized flex-item button to 0, so the button collapsed and
+     was invisible on Safari/iPad (Chromium sizes it fine). Same family of
+     bug as the cover's display: block fix above. */
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--gray-400);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 150ms ease;
+}
+
+.taste__play svg {
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+
+.taste__play:hover {
+  color: var(--gray-200);
+}
+
+.taste__play:disabled {
+  color: var(--gray-700);
+  cursor: default;
+}
+
+.taste__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.taste__track {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0 0 var(--space-3);
+  opacity: 1;
+  transition: opacity 300ms ease;
+}
+
+/* The artist carries the line; the track title reads as its shadow. */
+.taste__artist {
+  font-weight: var(--font-weight-regular);
+  color: var(--gray-100);
+}
+
+.taste__title {
+  font-weight: var(--font-weight-light);
+  color: var(--gray-400);
+}
+
+.taste__fade--out {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .taste__cover-slot,
+  .taste__track {
+    transition: none;
+  }
+}
+
+.taste__bar {
+  width: 100%;
+  height: 3px;
+  background: var(--gray-700);
+  cursor: pointer;
+  position: relative;
+}
+
+.taste__fill {
+  height: 100%;
+  background: var(--gray-400);
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.taste__next {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gray-400);
+  background: transparent;
+  border: 1px solid var(--gray-700);
+  padding: var(--space-1) var(--space-3);
+  cursor: pointer;
+  flex-shrink: 0;
+  align-self: center;
+  transition: border-color 150ms ease, color 150ms ease;
+}
+
+.taste__next:hover {
+  border-color: var(--qcr-lime);
+  color: var(--qcr-lime);
+}
+
+.taste__meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.taste__status {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--gray-500);
+  letter-spacing: 0.05em;
+  margin: 0;
+  min-height: 1.2em;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.taste__youtube {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.05em;
+  color: var(--gray-500);
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: color 150ms ease;
+}
+
+.taste__youtube:hover {
+  color: var(--qcr-lime);
+  text-decoration: underline;
+}
+
+.taste__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: var(--space-3);
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+.taste__toggle:hover {
+  color: var(--qcr-purple);
+}
+
+.taste__chevron {
+  transition: transform 150ms ease;
+}
+
+.taste__chevron--open {
+  transform: rotate(180deg);
+}
+
+.taste__list {
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-2) var(--space-5);
+}
+
+@media (max-width: 380px) {
+  .taste__list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.taste__item-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--gray-300);
+  overflow-wrap: anywhere;
+  transition: color 150ms ease;
+}
+
+.taste__item-btn:hover {
+  color: var(--qcr-lime);
+}
+
+.taste__item-btn--current {
+  color: var(--qcr-lime);
+}
+
+/* ===== Skeleton ===== */
+
+.taste__player--skeleton {
+  cursor: default;
+}
+
+.taste__skel-cover {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  background: var(--gray-700);
+  animation: taste-skel-pulse 1.6s ease-in-out infinite;
+}
+
+.taste__skel-button {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  background: var(--gray-700);
+  animation: taste-skel-pulse 1.6s ease-in-out infinite;
+}
+
+.taste__skel-text {
+  height: var(--text-sm);
+  width: 70%;
+  background: var(--gray-700);
+  margin: 0 0 var(--space-3);
+  animation: taste-skel-pulse 1.6s ease-in-out infinite;
+}
+
+.taste__skel-bar {
+  width: 100%;
+  height: 3px;
+  background: var(--gray-700);
+  animation: taste-skel-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes taste-skel-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
