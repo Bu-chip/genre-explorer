@@ -22,7 +22,8 @@
       "Bash(curl -s http://localhost:4173/)",
       "Bash(pkill -f \"serve dist\")",
       "Bash(node -e ':*)",
-      "Bash(node -e \"try { require\\('sharp'\\); console.log\\('sharp-ok'\\); } catch { console.log\\('no-sharp'\\); }\")"
+      "Bash(node -e \"try { require\\('sharp'\\); console.log\\('sharp-ok'\\); } catch { console.log\\('no-sharp'\\); }\")",
+      "mcp__Claude_Code_Remote__list_repos"
     ]
   }
 }
