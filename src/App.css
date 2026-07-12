@@ -110,7 +110,10 @@
   margin: 0 auto;
   padding: var(--space-5) 0 0;
   position: relative;
-  z-index: 1;
+  /* Above .zone-exploration (later sibling, z-index 1, opaque background):
+     popovers that overhang the zone boundary — the player's track-links
+     menu — would otherwise be painted over. */
+  z-index: 2;
 }
 
 /* Unified header: marquee → nav → block A (letras) → block B (iconos).

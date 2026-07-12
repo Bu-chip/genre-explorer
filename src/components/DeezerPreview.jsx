@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { TrackInfoPopover } from './TrackInfoPopover'
+import { TrackLinksMenu } from './TrackLinksMenu'
 import { deezerProxyUrl } from '../config'
 import './DeezerPreview.css'
 
@@ -262,9 +263,7 @@ export function DeezerPreview({ artist, track, preview, cover }) {
           {playing ? <PauseIcon /> : <PlayIcon />}
         </button>
         <div className="deezer-preview__info">
-          <p className="deezer-preview__track">
-            {data.artist} &mdash; {data.title}
-          </p>
+          <TrackLinksMenu artist={data.artist} title={data.title} />
           <div className="deezer-preview__bar" onClick={handleBarClick}>
             <div
               className="deezer-preview__fill"
