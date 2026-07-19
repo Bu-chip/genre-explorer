@@ -22,7 +22,7 @@ function UserIcon({ active }) {
 }
 
 export function AuthMenu() {
-  const { user, signInWithMagicLink, signOut } = useAuth()
+  const { user, signInWithMagicLink, signInWithGoogle, signOut } = useAuth()
   const [open, setOpen] = useState(false)
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState('idle') // idle | sending | sent | error
@@ -54,6 +54,18 @@ export function AuthMenu() {
     },
     [email, signInWithMagicLink],
   )
+
+  const handleGoogle = useCallback(async () => {
+    setStatus('sending')
+    setErrorMsg('')
+    const { error } = await signInWithGoogle()
+    // On success the browser redirects to Google, so there's no further UI to
+    // update here — only the error path needs to reset the menu state.
+    if (error) {
+      setStatus('error')
+      setErrorMsg(error.message)
+    }
+  }, [signInWithGoogle])
 
   const handleSignOut = useCallback(async () => {
     await signOut()
@@ -124,9 +136,14 @@ export function AuthMenu() {
                   {errorMsg || 'something went wrong. try again.'}
                 </p>
               )}
-              {/* Google sign-in is wired in AuthContext (signInWithGoogle).
-                  Enable a button here once the Google provider is configured
-                  in the Supabase dashboard. */}
+              <button
+                type="button"
+                className="auth-menu__action auth-menu__action--google"
+                onClick={handleGoogle}
+                disabled={status === 'sending'}
+              >
+                entrar con google
+              </button>
             </form>
           )}
         </div>
