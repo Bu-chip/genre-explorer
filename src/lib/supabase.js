@@ -6,9 +6,13 @@ import { createClient } from '@supabase/supabase-js'
 // format works as-is in createClient). The secret / service_role key must never
 // reach the bundle.
 //
-// detectSessionInUrl: parses the magic-link / OAuth tokens Supabase returns in
-// the URL hash (#access_token=...) and strips them. Our genre deep-link only
-// matches ^#genre=, so the two hash uses don't collide.
+// flowType 'pkce': the magic-link / OAuth return lands the auth in the query
+// string (?code=...), not the hash. supabase-js stores a code_verifier in
+// storage when the flow starts and exchanges the code for a session on return
+// (the code is single-use and valid ~5 min). This frees the URL hash entirely,
+// so our ^#genre= deep-link never collides with auth.
+// detectSessionInUrl: detects the ?code= on return, runs the exchange, and
+// strips it from the URL.
 const url = import.meta.env.VITE_SUPABASE_URL
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
@@ -21,6 +25,7 @@ if (!url || !anonKey) {
 
 export const supabase = createClient(url, anonKey, {
   auth: {
+    flowType: 'pkce',
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
