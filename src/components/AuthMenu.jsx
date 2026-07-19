@@ -21,7 +21,7 @@ function UserIcon({ active }) {
   )
 }
 
-export function AuthMenu() {
+export function AuthMenu({ favorites = [], genres = [], onSelect, onClearFavorites }) {
   const { user, signInWithMagicLink, signInWithGoogle, signOut } = useAuth()
   const [open, setOpen] = useState(false)
   const [email, setEmail] = useState('')
@@ -74,6 +74,26 @@ export function AuthMenu() {
 
   const signedIn = !!user
 
+  // Resolve the saved-genre slugs (from useCollection, passed down via NavBar)
+  // into full genre objects. Same mapping the star dropdown used to do.
+  const favoriteGenres = useMemo(
+    () => (favorites || []).map((slug) => genres?.find((g) => g.slug === slug)).filter(Boolean),
+    [favorites, genres],
+  )
+  const favCount = favoriteGenres.length
+
+  const selectFavorite = useCallback(
+    (genre) => {
+      setOpen(false)
+      onSelect?.(genre)
+    },
+    [onSelect],
+  )
+
+  const handleClearFavorites = useCallback(() => {
+    if (typeof onClearFavorites === 'function') onClearFavorites()
+  }, [onClearFavorites])
+
   // Avatar initial: prefer the Google display name, fall back to the email, and
   // take the first alphanumeric character so leading symbols/spaces are skipped.
   const initial = useMemo(() => {
@@ -82,6 +102,44 @@ export function AuthMenu() {
     const match = base.match(/[a-z0-9]/i)
     return match ? match[0].toUpperCase() : '?'
   }, [user])
+
+  // Shared between signed-in and signed-out: the collection lives in one panel
+  // now. Signed out, these are the localStorage favorites (no clear-all there).
+  const favoritesSection = (
+    <div className="auth-menu__favorites">
+      <p className="auth-menu__fav-header">your favorites · {favCount}</p>
+      {favCount > 0 ? (
+        <ul className="auth-menu__fav-list">
+          {favoriteGenres.map((genre) => (
+            <li
+              key={genre.slug}
+              className="auth-menu__fav-item"
+              onMouseDown={() => selectFavorite(genre)}
+            >
+              <span className="auth-menu__fav-name">{genre.name}</span>
+              <span
+                className="auth-menu__fav-dot"
+                style={{ backgroundColor: genre.color }}
+              />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="auth-menu__fav-empty">
+          no saved genres yet. tap save on any genre to keep it here.
+        </p>
+      )}
+      {favCount > 0 && signedIn && (
+        <button
+          type="button"
+          className="auth-menu__fav-clear"
+          onClick={handleClearFavorites}
+        >
+          clear all
+        </button>
+      )}
+    </div>
+  )
 
   return (
     <div className="auth-menu" ref={ref}>
@@ -108,6 +166,7 @@ export function AuthMenu() {
                 <span className="auth-menu__account-label">signed in as</span>
                 <span className="auth-menu__account-email">{user.email}</span>
               </p>
+              {favoritesSection}
               <button
                 type="button"
                 className="auth-menu__action"
@@ -122,11 +181,13 @@ export function AuthMenu() {
               <span className="auth-menu__note-email">{email.trim()}</span>
             </p>
           ) : (
-            <form className="auth-menu__form" onSubmit={handleSend}>
-              <p className="auth-menu__note">
-                sign in to sync your collection across devices.
-              </p>
-              <input
+            <>
+              {favoritesSection}
+              <form className="auth-menu__form" onSubmit={handleSend}>
+                <p className="auth-menu__note">
+                  create an account so you don't lose them.
+                </p>
+                <input
                 className="auth-menu__input"
                 type="email"
                 required
@@ -157,7 +218,8 @@ export function AuthMenu() {
               >
                 entrar con google
               </button>
-            </form>
+              </form>
+            </>
           )}
         </div>
       )}

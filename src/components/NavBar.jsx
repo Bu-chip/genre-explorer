@@ -51,24 +51,7 @@ function SearchIcon() {
   )
 }
 
-function StarIcon({ filled }) {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill={filled ? 'currentColor' : 'none'}
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12 3.5l2.6 5.3 5.9.85-4.25 4.15 1 5.85L12 16.9l-5.25 2.75 1-5.85L3.5 9.65l5.9-.85L12 3.5z" />
-    </svg>
-  )
-}
-
-export function NavBar({ genres, onRandom, onSelect, disabled, currentGenre, favorites, onClearFavorites, signedIn }) {
+export function NavBar({ genres, onRandom, onSelect, disabled, currentGenre, favorites, onClearFavorites }) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [regionOpen, setRegionOpen] = useState(false)
   const [searchActive, setSearchActive] = useState(false)
@@ -76,13 +59,11 @@ export function NavBar({ genres, onRandom, onSelect, disabled, currentGenre, fav
   const [results, setResults] = useState([])
   const [resultsOpen, setResultsOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
-  const [favoritesOpen, setFavoritesOpen] = useState(false)
 
   const barRef = useRef(null)
   const dropdownRef = useRef(null)
   const searchRef = useRef(null)
   const inputRef = useRef(null)
-  const favoritesRef = useRef(null)
 
   const randomDisplay = useIdleGlitch('RANDOM', { paused: disabled })
 
@@ -186,27 +167,10 @@ export function NavBar({ genres, onRandom, onSelect, disabled, currentGenre, fav
       if (searchRef.current && !searchRef.current.contains(e.target)) {
         collapseSearch()
       }
-      if (favoritesRef.current && !favoritesRef.current.contains(e.target)) {
-        setFavoritesOpen(false)
-      }
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [collapseSearch])
-
-  const favoriteGenres = (favorites || [])
-    .map((slug) => genres?.find((g) => g.slug === slug))
-    .filter(Boolean)
-  const favCount = favoriteGenres.length
-
-  const selectFavorite = (genre) => {
-    setFavoritesOpen(false)
-    onSelect(genre)
-  }
-
-  const handleClearFavorites = () => {
-    if (typeof onClearFavorites === 'function') onClearFavorites()
-  }
 
   const handleSearchKeyDown = (e) => {
     if (e.key === 'Escape') {
@@ -330,60 +294,12 @@ export function NavBar({ genres, onRandom, onSelect, disabled, currentGenre, fav
       </div>
 
       <div className="nav-bar__slot nav-bar__slot--right">
-        <div className="nav-bar__favorites-wrap" ref={favoritesRef}>
-          <button
-            type="button"
-            className="nav-bar__icon-btn nav-bar__star-btn"
-            onClick={() => setFavoritesOpen((o) => !o)}
-            aria-expanded={favoritesOpen}
-            aria-label={`View saved genres (${favCount})`}
-            title="Saved genres"
-          >
-            <StarIcon filled={favCount > 0} />
-            <span className="nav-bar__star-count" aria-hidden="true">({favCount})</span>
-          </button>
-
-          {favoritesOpen && (
-            <div className="nav-bar__favorites">
-              {favoriteGenres.length === 0 ? (
-                <p className="nav-bar__favorites-empty">
-                  no saved genres yet. tap save on any genre to keep it here.
-                </p>
-              ) : (
-                <>
-                  <ul className="nav-bar__favorites-list">
-                    {favoriteGenres.map((genre) => (
-                      <li
-                        key={genre.slug}
-                        className="nav-bar__result"
-                        onMouseDown={() => selectFavorite(genre)}
-                      >
-                        <span className="nav-bar__result-name">{genre.name}</span>
-                        <span
-                          className="nav-bar__result-dot"
-                          style={{ backgroundColor: genre.color }}
-                        />
-                      </li>
-                    ))}
-                  </ul>
-                  <button
-                    type="button"
-                    className="nav-bar__favorites-clear"
-                    onClick={handleClearFavorites}
-                  >
-                    clear all
-                  </button>
-                </>
-              )}
-              {!signedIn && (
-                <p className="nav-bar__favorites-hint">
-                  sign in to sync your collection.
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-        <AuthMenu />
+        <AuthMenu
+          favorites={favorites}
+          genres={genres}
+          onSelect={onSelect}
+          onClearFavorites={onClearFavorites}
+        />
       </div>
     </nav>
   )
