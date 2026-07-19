@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import './AuthMenu.css'
 
@@ -74,6 +74,15 @@ export function AuthMenu() {
 
   const signedIn = !!user
 
+  // Avatar initial: prefer the Google display name, fall back to the email, and
+  // take the first alphanumeric character so leading symbols/spaces are skipped.
+  const initial = useMemo(() => {
+    const name = user?.user_metadata?.full_name || user?.user_metadata?.name || ''
+    const base = name.trim() || user?.email || ''
+    const match = base.match(/[a-z0-9]/i)
+    return match ? match[0].toUpperCase() : '?'
+  }, [user])
+
   return (
     <div className="auth-menu" ref={ref}>
       <button
@@ -84,7 +93,11 @@ export function AuthMenu() {
         aria-label={signedIn ? 'Account' : 'Sign in'}
         title={signedIn ? 'Account' : 'Sign in'}
       >
-        <UserIcon active={signedIn} />
+        {signedIn ? (
+          <span className="auth-menu__avatar">{initial}</span>
+        ) : (
+          <UserIcon active={signedIn} />
+        )}
       </button>
 
       {open && (

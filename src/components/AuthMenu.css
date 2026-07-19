@@ -25,6 +25,23 @@
   outline-offset: var(--space-1);
 }
 
+.auth-menu__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  /* excepción avatar: círculo solo aquí — el resto del sistema no usa border-radius */
+  border-radius: 50%;
+  background: var(--qcr-purple);
+  color: #f2efe8; /* papel: contraste claro sobre el violeta (no hay token --paper) */
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-display);
+  font-size: var(--text-sm);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
 .auth-menu__panel {
   position: absolute;
   top: calc(100% + var(--space-2));
