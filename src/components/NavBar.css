@@ -73,7 +73,7 @@
   padding: var(--space-1) var(--space-2);
   cursor: pointer;
   font-family: var(--font-display);
-  font-weight: var(--font-weight-light);
+  font-weight: var(--font-weight-display);
   font-size: clamp(2rem, 4vw, 2.5rem);
   line-height: 1;
   letter-spacing: 0.05em;

@@ -11,10 +11,10 @@
 
 .genre-card__name {
   font-family: var(--font-display);
-  font-weight: var(--font-weight-light);
+  font-weight: var(--font-weight-display);
   font-size: var(--text-display);
   line-height: 1;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   color: var(--gray-100);
   text-transform: uppercase;
   text-align: center;
