@@ -166,3 +166,89 @@
   letter-spacing: 0.01em;
   word-break: break-all;
 }
+
+/* ===== Collection (favorites) — merged in from the old nav star dropdown ===== */
+
+.auth-menu__favorites {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--gray-700);
+}
+
+.auth-menu__fav-header {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: var(--space-3) var(--space-4);
+  margin: 0;
+}
+
+.auth-menu__fav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.auth-menu__fav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  transition: background-color 0.1s;
+}
+
+.auth-menu__fav-item:hover {
+  background: var(--gray-700);
+}
+
+.auth-menu__fav-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--gray-300);
+  letter-spacing: 0.01em;
+}
+
+.auth-menu__fav-item:hover .auth-menu__fav-name {
+  color: var(--gray-100);
+}
+
+.auth-menu__fav-dot {
+  width: 5px;
+  height: 5px;
+  flex-shrink: 0;
+}
+
+.auth-menu__fav-empty {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--gray-500);
+  letter-spacing: 0.01em;
+  line-height: 1.5;
+  padding: 0 var(--space-4) var(--space-3);
+  margin: 0;
+  text-transform: lowercase;
+}
+
+.auth-menu__fav-clear {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: lowercase;
+  letter-spacing: 0.04em;
+  color: var(--gray-500);
+  background: none;
+  border: none;
+  border-top: 1px solid var(--gray-700);
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.15s;
+}
+
+.auth-menu__fav-clear:hover {
+  color: var(--qcr-purple);
+}
