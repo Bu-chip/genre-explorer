@@ -5,7 +5,7 @@ import { useLastfm } from './hooks/useLastfm'
 import { useTrack } from './hooks/useTrack'
 import { useWikipedia } from './hooks/useWikipedia'
 import { useGenreDetail } from './hooks/useGenreDetail'
-import { useFavorites } from './hooks/useFavorites'
+import { useCollection } from './hooks/useCollection'
 import { getRarityScore } from './utils/rarityScore'
 import { getPhrase } from './utils/phrases'
 import { randomGlyph } from './utils/glitch'
@@ -186,7 +186,7 @@ function App() {
   // A track resolved from an artist click overrides the genre cascade's
   // pick in the player until the next genre loads.
   const [artistTrack, setArtistTrack] = useState(null)
-  const { favorites, isFavorite, toggleFavorite, clearFavorites } = useFavorites()
+  const { favorites, isFavorite, toggleFavorite, clearFavorites, signedIn } = useCollection()
 
   const genreIndex = useMemo(() => {
     if (!selectedGenre || !genres) return null
@@ -328,7 +328,7 @@ function App() {
               pointerEvents: headerVisible ? 'auto' : 'none',
             }}
           >
-            <NavBar genres={genres} onRandom={handleRandom} onSelect={handleResult} disabled={spinning} currentGenre={selectedGenre} favorites={favorites} onClearFavorites={clearFavorites} />
+            <NavBar genres={genres} onRandom={handleRandom} onSelect={handleResult} disabled={spinning} currentGenre={selectedGenre} favorites={favorites} onClearFavorites={clearFavorites} signedIn={signedIn} />
           </header>
 
           <section className="zone-discovery">
@@ -341,7 +341,7 @@ function App() {
                 className="marquee--header"
               />
               <div className="discovery-header__nav" ref={nameRef}>
-                <NavBar genres={genres} onRandom={handleRandom} onSelect={handleResult} disabled={spinning} currentGenre={selectedGenre} favorites={favorites} onClearFavorites={clearFavorites} />
+                <NavBar genres={genres} onRandom={handleRandom} onSelect={handleResult} disabled={spinning} currentGenre={selectedGenre} favorites={favorites} onClearFavorites={clearFavorites} signedIn={signedIn} />
               </div>
               <div className="discovery-content">
                 <div className="discovery-block discovery-block--letras">
