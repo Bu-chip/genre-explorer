@@ -299,6 +299,12 @@
 
 /* ===== Favorites panel ===== */
 
+.nav-bar__favorites-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .nav-bar__favorites {
   position: absolute;
   top: calc(100% + var(--space-2));
@@ -349,6 +355,18 @@
 
 .nav-bar__favorites-clear:hover {
   color: var(--qcr-purple);
+}
+
+.nav-bar__favorites-hint {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--gray-500);
+  letter-spacing: 0.01em;
+  line-height: 1.5;
+  text-transform: lowercase;
+  padding: var(--space-2) var(--space-4);
+  margin: 0;
+  border-top: 1px solid var(--gray-700);
 }
 
 /* ===== Mobile tightening ===== */

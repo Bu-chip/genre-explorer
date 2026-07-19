@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { getGenresByRegion, REGION_NAMES } from '../utils/regions'
 import { getRarityScore } from '../utils/rarityScore'
 import { useIdleGlitch } from '../hooks/useIdleGlitch'
+import { AuthMenu } from './AuthMenu'
 import './NavBar.css'
 
 const MAX_RESULTS = 8
@@ -67,7 +68,7 @@ function StarIcon({ filled }) {
   )
 }
 
-export function NavBar({ genres, onRandom, onSelect, disabled, currentGenre, favorites, onClearFavorites }) {
+export function NavBar({ genres, onRandom, onSelect, disabled, currentGenre, favorites, onClearFavorites, signedIn }) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [regionOpen, setRegionOpen] = useState(false)
   const [searchActive, setSearchActive] = useState(false)
@@ -328,53 +329,61 @@ export function NavBar({ genres, onRandom, onSelect, disabled, currentGenre, fav
         </div>
       </div>
 
-      <div className="nav-bar__slot nav-bar__slot--right" ref={favoritesRef}>
-        <button
-          type="button"
-          className="nav-bar__icon-btn nav-bar__star-btn"
-          onClick={() => setFavoritesOpen((o) => !o)}
-          aria-expanded={favoritesOpen}
-          aria-label={`View saved genres (${favCount})`}
-          title="Saved genres"
-        >
-          <StarIcon filled={favCount > 0} />
-          <span className="nav-bar__star-count" aria-hidden="true">({favCount})</span>
-        </button>
+      <div className="nav-bar__slot nav-bar__slot--right">
+        <div className="nav-bar__favorites-wrap" ref={favoritesRef}>
+          <button
+            type="button"
+            className="nav-bar__icon-btn nav-bar__star-btn"
+            onClick={() => setFavoritesOpen((o) => !o)}
+            aria-expanded={favoritesOpen}
+            aria-label={`View saved genres (${favCount})`}
+            title="Saved genres"
+          >
+            <StarIcon filled={favCount > 0} />
+            <span className="nav-bar__star-count" aria-hidden="true">({favCount})</span>
+          </button>
 
-        {favoritesOpen && (
-          <div className="nav-bar__favorites">
-            {favoriteGenres.length === 0 ? (
-              <p className="nav-bar__favorites-empty">
-                no saved genres yet. tap save on any genre to keep it here.
-              </p>
-            ) : (
-              <>
-                <ul className="nav-bar__favorites-list">
-                  {favoriteGenres.map((genre) => (
-                    <li
-                      key={genre.slug}
-                      className="nav-bar__result"
-                      onMouseDown={() => selectFavorite(genre)}
-                    >
-                      <span className="nav-bar__result-name">{genre.name}</span>
-                      <span
-                        className="nav-bar__result-dot"
-                        style={{ backgroundColor: genre.color }}
-                      />
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  type="button"
-                  className="nav-bar__favorites-clear"
-                  onClick={handleClearFavorites}
-                >
-                  clear all
-                </button>
-              </>
-            )}
-          </div>
-        )}
+          {favoritesOpen && (
+            <div className="nav-bar__favorites">
+              {favoriteGenres.length === 0 ? (
+                <p className="nav-bar__favorites-empty">
+                  no saved genres yet. tap save on any genre to keep it here.
+                </p>
+              ) : (
+                <>
+                  <ul className="nav-bar__favorites-list">
+                    {favoriteGenres.map((genre) => (
+                      <li
+                        key={genre.slug}
+                        className="nav-bar__result"
+                        onMouseDown={() => selectFavorite(genre)}
+                      >
+                        <span className="nav-bar__result-name">{genre.name}</span>
+                        <span
+                          className="nav-bar__result-dot"
+                          style={{ backgroundColor: genre.color }}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    type="button"
+                    className="nav-bar__favorites-clear"
+                    onClick={handleClearFavorites}
+                  >
+                    clear all
+                  </button>
+                </>
+              )}
+              {!signedIn && (
+                <p className="nav-bar__favorites-hint">
+                  sign in to sync your collection.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+        <AuthMenu />
       </div>
     </nav>
   )

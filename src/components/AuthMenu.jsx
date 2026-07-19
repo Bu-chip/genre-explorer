@@ -1,0 +1,136 @@
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { useAuth } from '../hooks/useAuth'
+import './AuthMenu.css'
+
+function UserIcon({ active }) {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="8" r="3.5" fill={active ? 'currentColor' : 'none'} />
+      <path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6" />
+    </svg>
+  )
+}
+
+export function AuthMenu() {
+  const { user, signInWithMagicLink, signOut } = useAuth()
+  const [open, setOpen] = useState(false)
+  const [email, setEmail] = useState('')
+  const [status, setStatus] = useState('idle') // idle | sending | sent | error
+  const [errorMsg, setErrorMsg] = useState('')
+  const ref = useRef(null)
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const handleSend = useCallback(
+    async (e) => {
+      e.preventDefault()
+      const addr = email.trim()
+      if (!addr) return
+      setStatus('sending')
+      setErrorMsg('')
+      const { error } = await signInWithMagicLink(addr)
+      if (error) {
+        setStatus('error')
+        setErrorMsg(error.message)
+      } else {
+        setStatus('sent')
+      }
+    },
+    [email, signInWithMagicLink],
+  )
+
+  const handleSignOut = useCallback(async () => {
+    await signOut()
+    setOpen(false)
+  }, [signOut])
+
+  const signedIn = !!user
+
+  return (
+    <div className="auth-menu" ref={ref}>
+      <button
+        type="button"
+        className="auth-menu__trigger"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        aria-label={signedIn ? 'Account' : 'Sign in'}
+        title={signedIn ? 'Account' : 'Sign in'}
+      >
+        <UserIcon active={signedIn} />
+      </button>
+
+      {open && (
+        <div className="auth-menu__panel">
+          {signedIn ? (
+            <>
+              <p className="auth-menu__account">
+                <span className="auth-menu__account-label">signed in as</span>
+                <span className="auth-menu__account-email">{user.email}</span>
+              </p>
+              <button
+                type="button"
+                className="auth-menu__action"
+                onClick={handleSignOut}
+              >
+                sign out
+              </button>
+            </>
+          ) : status === 'sent' ? (
+            <p className="auth-menu__note">
+              check your inbox — magic link sent to{' '}
+              <span className="auth-menu__note-email">{email.trim()}</span>
+            </p>
+          ) : (
+            <form className="auth-menu__form" onSubmit={handleSend}>
+              <p className="auth-menu__note">
+                sign in to sync your collection across devices.
+              </p>
+              <input
+                className="auth-menu__input"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@email.com"
+                autoComplete="email"
+                spellCheck={false}
+                aria-label="Email for magic link"
+              />
+              <button
+                type="submit"
+                className="auth-menu__action"
+                disabled={status === 'sending'}
+              >
+                {status === 'sending' ? 'sending…' : 'send magic link'}
+              </button>
+              {status === 'error' && (
+                <p className="auth-menu__error">
+                  {errorMsg || 'something went wrong. try again.'}
+                </p>
+              )}
+              {/* Google sign-in is wired in AuthContext (signInWithGoogle).
+                  Enable a button here once the Google provider is configured
+                  in the Supabase dashboard. */}
+            </form>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
