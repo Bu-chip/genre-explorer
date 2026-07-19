@@ -56,7 +56,7 @@
   border: none;
   padding: var(--space-2) var(--space-3);
   font-family: var(--font-display);
-  font-weight: var(--font-weight-light);
+  font-weight: var(--font-weight-display);
   font-size: var(--text-hero);
   line-height: 1.05;
   letter-spacing: 0.05em;
