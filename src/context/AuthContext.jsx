@@ -35,7 +35,8 @@ export function AuthProvider({ children }) {
     })
   }, [])
 
-  // Ready for a later step — Google provider not enabled yet in Supabase.
+  // OAuth via the Google provider (enabled in the Supabase dashboard). Mirrors
+  // the magic link's redirect back to the current origin.
   const signInWithGoogle = useCallback(async () => {
     return supabase.auth.signInWithOAuth({
       provider: 'google',

@@ -108,6 +108,13 @@
   color: var(--gray-500);
 }
 
+/* Google sign-in: same monochrome action button, separated from the email flow
+   by a divider (reuses the input's gray-700 rule). No color logo, no radius/
+   shadow — lime only surfaces on hover/focus via .auth-menu__action. */
+.auth-menu__action--google {
+  border-top: 1px solid var(--gray-700);
+}
+
 .auth-menu__error {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
