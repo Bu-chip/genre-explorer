@@ -4,6 +4,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Sin publicar]
 
+### Notas
+
+- Comparación visual de la PR #40 contra `main` (2026-09-19). Ambas versiones
+  levantadas en paralelo desde worktrees en detached (`8bbc127` y `31e7910`),
+  sin tocar ninguna rama. Tres géneros (jazz, zeuhl, goa psytrance) en móvil
+  (390×844) y escritorio (1440×900), recortando a los bloques que toca el PR.
+  La diferencia de tipografía display se neutralizó inyectando la fuente de
+  `main`, y resultó no afectar: ninguno de los bloques comparados usa
+  `--font-display`. Los JSON de detalle son idénticos byte a byte en ambas
+  versiones, así que lo que cambia es la presentación, no los datos. #40 sigue
+  abierto y sin modificar; la comparación no altera el repo.
+
 ### Añadido
 
 - Una letra del título del género se tiñe con su color de EveryNoise. La letra
