@@ -90,33 +90,32 @@ async function fetchItunesByGenre(genre) {
 }
 
 export function useTrack(genreName) {
-  const [track, setTrack] = useState(null)
+  // Track and genre are stored together so the previous genre's track is
+  // dropped during render, rather than cleared by a setState in the effect.
+  const [result, setResult] = useState({ genreName: null, track: null })
 
   useEffect(() => {
-    if (!genreName) {
-      setTrack(null)
-      return
-    }
+    if (!genreName) return
+
     let cancelled = false
-    setTrack(null)
 
     async function run() {
       const lastfm = await fetchLastfmTopTrack(genreName)
       if (cancelled) return
-      if (lastfm) { setTrack(lastfm); return }
+      if (lastfm) { setResult({ genreName, track: lastfm }); return }
 
       const deezer = await fetchDeezerByGenre(genreName)
       if (cancelled) return
-      if (deezer) { setTrack(deezer); return }
+      if (deezer) { setResult({ genreName, track: deezer }); return }
 
       const itunes = await fetchItunesByGenre(genreName)
       if (cancelled) return
-      if (itunes) { setTrack(itunes); return }
+      if (itunes) { setResult({ genreName, track: itunes }); return }
     }
     run()
 
     return () => { cancelled = true }
   }, [genreName])
 
-  return track
+  return result.genreName === genreName ? result.track : null
 }

@@ -45,6 +45,13 @@ function freshDisplays() {
   return Array.from({ length: RANDOM_COUNT }, () => [...RANDOM_LETTERS])
 }
 
+// Deep link: #genre=<slug> picked up on the very first render, so the app
+// never paints the landing page before resolving it.
+function initialHashSlug() {
+  const match = window.location.hash.match(/^#genre=(.+)$/)
+  return match ? decodeURIComponent(match[1]) : null
+}
+
 function Landing({ onRandom }) {
   const [displays, setDisplays] = useState(freshDisplays)
   const [scrambling, setScrambling] = useState(false)
@@ -158,25 +165,23 @@ function Landing({ onRandom }) {
 
 function App() {
   const { genres, loading, error } = useGenres()
-  const [selectedGenre, setSelectedGenre] = useState(null)
+  // The slug is the source of truth, read straight from the deep link on the
+  // first render; the genre object is looked up from it once genres load.
+  const [selectedSlug, setSelectedSlug] = useState(initialHashSlug)
   const [spinDisplay, setSpinDisplay] = useState(null)
+  const [spinning, setSpinning] = useState(false)
   const [headerVisible, setHeaderVisible] = useState(false)
-  const [scrollHintVisible, setScrollHintVisible] = useState(true)
+  const [scrollHintDismissedFor, setScrollHintDismissedFor] = useState(null)
   const nameRef = useRef(null)
+  // Mirrors `spinning` for the guards that run outside render, where reading
+  // state through a stale closure would let a second spin start.
   const cyclingRef = useRef(false)
   const cyclingTimerRef = useRef(null)
 
-  // Deep link: load genre from hash on initial load
-  useEffect(() => {
-    if (!genres?.length || selectedGenre) return
-    const hash = window.location.hash
-    const match = hash.match(/^#genre=(.+)$/)
-    if (match) {
-      const slug = decodeURIComponent(match[1])
-      const genre = genres.find((g) => g.slug === slug)
-      if (genre) setSelectedGenre(genre)
-    }
-  }, [genres, selectedGenre])
+  const selectedGenre = useMemo(() => {
+    if (!selectedSlug || !genres?.length) return null
+    return genres.find((g) => g.slug === selectedSlug) ?? null
+  }, [genres, selectedSlug])
 
   const lastfm = useLastfm(selectedGenre?.name)
   const track = useTrack(selectedGenre?.name)
@@ -198,11 +203,9 @@ function App() {
     return getRarityScore(selectedGenre, genres, lastfm)
   }, [selectedGenre, genres, lastfm])
 
-  const [contextPhrase, setContextPhrase] = useState(null)
-
-  useEffect(() => {
-    if (!selectedGenre) return
-    setContextPhrase(getPhrase(rarityScore, { index: genreIndex }))
+  const contextPhrase = useMemo(() => {
+    if (!selectedGenre) return null
+    return getPhrase(rarityScore, { index: genreIndex })
   }, [selectedGenre, rarityScore, genreIndex])
 
   const handleResult = useCallback((genre) => {
@@ -210,10 +213,11 @@ function App() {
       clearInterval(cyclingTimerRef.current)
       cyclingTimerRef.current = null
       cyclingRef.current = false
+      setSpinning(false)
     }
     setSpinDisplay(null)
     setArtistTrack(null)
-    setSelectedGenre(genre)
+    setSelectedSlug(genre.slug)
     setHeaderVisible(false)
     window.location.hash = `genre=${genre.slug}`
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -236,6 +240,7 @@ function App() {
     if (cyclingRef.current) return
 
     cyclingRef.current = true
+    setSpinning(true)
     setHeaderVisible(false)
     window.scrollTo({ top: 0, behavior: 'smooth' })
 
@@ -250,9 +255,10 @@ function App() {
         clearInterval(cyclingTimerRef.current)
         cyclingTimerRef.current = null
         cyclingRef.current = false
+        setSpinning(false)
         setSpinDisplay(null)
         setArtistTrack(null)
-        setSelectedGenre(genre)
+        setSelectedSlug(genre.slug)
       }
     }, CYCLE_TICK)
   }, [selectedGenre, genres, handleResult, pickRandom])
@@ -276,12 +282,14 @@ function App() {
     }
   }, [])
 
+  // The hint is shown per genre and dismissed by the first real scroll, so
+  // "which genre dismissed it" is the only thing worth storing.
   useEffect(() => {
-    if (!selectedGenre) return
-    setScrollHintVisible(true)
+    const slug = selectedGenre?.slug
+    if (!slug) return
     const onScroll = () => {
       if (window.scrollY > 50) {
-        setScrollHintVisible(false)
+        setScrollHintDismissedFor(slug)
         window.removeEventListener('scroll', onScroll)
       }
     }
@@ -311,7 +319,7 @@ function App() {
   }
 
   const hasGenre = !!selectedGenre
-  const spinning = cyclingRef.current
+  const scrollHintVisible = hasGenre && scrollHintDismissedFor !== selectedGenre.slug
 
   return (
     <div className="app">
