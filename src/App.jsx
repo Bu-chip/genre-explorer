@@ -259,6 +259,9 @@ function App() {
         setSpinDisplay(null)
         setArtistTrack(null)
         setSelectedSlug(genre.slug)
+        // Same as handleResult: the deep link has to follow the genre on
+        // screen, or a reload or a shared URL lands on the previous one.
+        window.location.hash = `genre=${genre.slug}`
       }
     }, CYCLE_TICK)
   }, [selectedGenre, genres, handleResult, pickRandom])
