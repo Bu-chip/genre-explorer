@@ -26,6 +26,13 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ### Cambiado
 
+- La cabecera del género se lee como tres grupos visuales en vez de dos:
+  título solo, luego frase + contador, luego iconos + guardar/compartir. El
+  salto del título al par de metadatos pasa de D/3 a D/2, y el de
+  guardar/compartir a la zona siguiente de D/2 a D, que lo convierte en el
+  hueco mayor de la columna. El pie del player entra en la escala de ritmo
+  (`--space-3` → D/3). No se crean variables nuevas: solo se reordenan
+  `--rhythm-D`, `--rhythm-D-half` y `--rhythm-D-third`.
 - Los hooks `useLastfm`, `useTrack` y `useWikipedia` guardan el dato junto al
   género al que pertenece y descartan el desajuste en render, en vez de
   limpiarlo con un `setState` dentro del efecto. Mismo comportamiento visible
