@@ -4,6 +4,13 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Sin publicar]
 
+### Añadido
+
+- Workflow `Lint`, que corre `npm run lint` en cada pull request contra `main`.
+  El lint del deploy solo corre en push a `main`, es decir ya mergeado: si una
+  rama vieja reintroduce errores, el aviso llegaba con el deploy ya en rojo.
+  Este lo adelanta al pull request.
+
 ### Arreglado
 
 - El hash `#genre=` no se actualizaba al terminar un giro de RANDOM. El género
