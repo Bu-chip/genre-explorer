@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useLayoutEffect } from 'react'
-import { isMobile, YOUTUBE_PATH, SPOTIFY_PATH } from './ListenLinks'
+import { isMobile, YOUTUBE_PATH, SPOTIFY_PATH } from '../utils/platformLinks'
 import './TrackLinksMenu.css'
 
 // Deezer equalizer glyph (simple-icons), monochrome like the rest.
