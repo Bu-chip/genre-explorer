@@ -6,15 +6,6 @@
   box-sizing: border-box;
 }
 
-:root {
-  --bg-primary: var(--gray-900);
-  --bg-surface: #13161a;
-  --text-primary: #D5F9DE;
-  --text-secondary: #8AA399;
-  --accent: #8FA6CB;
-  --accent-hover: #DBF4A7;
-}
-
 html, body, #root {
   height: 100%;
   width: 100%;

@@ -22,7 +22,7 @@
   font-size: clamp(1.4rem, 3.5vw, 2.2rem);
   letter-spacing: -0.01em;
   text-transform: lowercase;
-  color: var(--text-secondary);
+  color: var(--accent-teal);
   opacity: 0.5;
   transition: color 0.1s;
   text-align: center;
@@ -33,7 +33,7 @@
 }
 
 .slot-machine__text--spinning {
-  color: var(--text-primary);
+  color: var(--accent-mint);
   opacity: 0.4;
 }
 
@@ -43,7 +43,7 @@
   font-weight: 500;
   letter-spacing: 0.25em;
   text-transform: uppercase;
-  color: var(--text-secondary);
+  color: var(--accent-teal);
   background: none;
   border: none;
   padding: 0.3rem 0;
@@ -54,7 +54,7 @@
 }
 
 .slot-machine__button:hover:not(:disabled) {
-  color: var(--accent-hover);
+  color: var(--accent-lime);
 }
 
 .slot-machine__button:disabled {

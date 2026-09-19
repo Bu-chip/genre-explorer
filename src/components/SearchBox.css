@@ -46,7 +46,7 @@
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   letter-spacing: 0.02em;
-  color: var(--text-primary);
+  color: var(--accent-mint);
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--gray-700);
