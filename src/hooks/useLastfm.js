@@ -35,7 +35,10 @@ async function fetchJson(params) {
 }
 
 export function useLastfm(genreName) {
-  const [data, setData] = useState(null)
+  // The result is stored together with the genre it belongs to, so a stale
+  // result is discarded during render instead of being cleared by a setState
+  // inside the effect (which would cost an extra render pass).
+  const [result, setResult] = useState({ genreName: null, data: null })
 
   useEffect(() => {
     if (!genreName || !API_KEY) return
@@ -51,17 +54,16 @@ export function useLastfm(genreName) {
       const reach = infoRes?.tag?.reach != null ? Number(infoRes.tag.reach) : null
 
       if (summary || reach != null) {
-        setData({ summary, listeners: reach })
+        setResult({ genreName, data: { summary, listeners: reach } })
       } else {
-        setData(null)
+        setResult({ genreName, data: null })
       }
     }
 
-    setData(null)
     load()
 
     return () => { cancelled = true }
   }, [genreName])
 
-  return data
+  return result.genreName === genreName ? result.data : null
 }

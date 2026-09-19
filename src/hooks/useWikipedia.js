@@ -196,7 +196,9 @@ async function tryWiki(wiki, genreName, isCancelled) {
 }
 
 export function useWikipedia(genreName) {
-  const [data, setData] = useState(null)
+  // Page and genre are stored together so a result from the previous genre is
+  // dropped during render, rather than cleared by a setState in the effect.
+  const [result, setResult] = useState({ genreName: null, page: null })
 
   useEffect(() => {
     if (!genreName) return
@@ -208,13 +210,12 @@ export function useWikipedia(genreName) {
         const page = await tryWiki(wiki, genreName, () => cancelled)
         if (cancelled) return
         if (page) {
-          setData(page)
+          setResult({ genreName, page })
           return
         }
       }
     }
 
-    setData(null)
     load()
 
     return () => {
@@ -222,5 +223,5 @@ export function useWikipedia(genreName) {
     }
   }, [genreName])
 
-  return data
+  return result.genreName === genreName ? result.page : null
 }

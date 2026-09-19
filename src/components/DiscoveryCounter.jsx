@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo, useEffect } from 'react'
 import './DiscoveryCounter.css'
 
 const STORAGE_KEY = 'genre-explorer-seen'
@@ -22,13 +22,21 @@ function addSeenSlug(slug) {
 }
 
 export function DiscoveryCounter({ genre, total, compact }) {
-  const [count, setCount] = useState(() => getSeenSlugs().length)
+  const slug = genre?.slug
+
+  // Recording a genre as seen writes to localStorage, so it stays in an
+  // effect. The number shown is derived from that same store plus the genre
+  // on screen, so it needs no state of its own: whether the write has landed
+  // yet or not, the count comes out the same.
+  const count = useMemo(() => {
+    const seen = getSeenSlugs()
+    if (!slug) return seen.length
+    return seen.includes(slug) ? seen.length : seen.length + 1
+  }, [slug])
 
   useEffect(() => {
-    if (genre?.slug) {
-      setCount(addSeenSlug(genre.slug))
-    }
-  }, [genre?.slug])
+    if (slug) addSeenSlug(slug)
+  }, [slug])
 
   if (!genre) return null
 

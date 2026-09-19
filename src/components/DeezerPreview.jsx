@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { TrackInfoPopover } from './TrackInfoPopover'
 import { TrackLinksMenu } from './TrackLinksMenu'
 import { deezerProxyUrl } from '../config'
@@ -96,48 +96,54 @@ function Label() {
 }
 
 export function DeezerPreview({ artist, track, preview, cover }) {
-  const [data, setData] = useState(null)
-  const [notFound, setNotFound] = useState(false)
+  const [searched, setSearched] = useState({ key: null, data: null, notFound: false })
   const [playing, setPlaying] = useState(false)
   const [progress, setProgress] = useState(0)
   const audioRef = useRef(null)
   const rafRef = useRef(null)
   const fadeRafRef = useRef(null)
 
+  // Identity of the track currently being shown. A search result is only
+  // valid while it still matches, so switching tracks discards it during
+  // render instead of needing a setState to clear it.
+  const key = artist && track ? `${artist}\u0000${track}` : null
+
   // Resolve the preview: reuse the one the cascade already found (Deezer hit
-  // in useTrack), or search Deezer by artist + track (Last.fm / iTunes hits
-  // only carry names, no preview URL).
+  // in useTrack), or fall back to the Deezer search below (Last.fm / iTunes
+  // hits only carry names, no preview URL).
+  const data = useMemo(() => {
+    if (!key) return null
+    if (preview) return { preview, cover, artist, title: track }
+    return searched.key === key ? searched.data : null
+  }, [key, preview, cover, artist, track, searched])
+
+  const notFound = !preview && searched.key === key && searched.notFound
+
   useEffect(() => {
-    if (!artist || !track) return
+    if (!key || preview) return
 
     let cancelled = false
 
-    if (preview) {
-      setData({ preview, cover, artist, title: track })
-    } else {
-      fetchDeezer(artist, track).then((result) => {
-        if (cancelled) return
-        if (result?.preview) {
-          setData({
+    fetchDeezer(artist, track).then((result) => {
+      if (cancelled) return
+      if (result?.preview) {
+        setSearched({
+          key,
+          data: {
             preview: result.preview,
             cover: result.album?.cover_medium,
             artist: result.artist?.name || artist,
             title: result.title || track,
-          })
-        } else {
-          setNotFound(true)
-        }
-      })
-    }
+          },
+          notFound: false,
+        })
+      } else {
+        setSearched({ key, data: null, notFound: true })
+      }
+    })
 
-    return () => {
-      cancelled = true
-      setData(null)
-      setNotFound(false)
-      setPlaying(false)
-      setProgress(0)
-    }
-  }, [artist, track, preview, cover])
+    return () => { cancelled = true }
+  }, [key, artist, track, preview])
 
   // Ramp volume 0 → 1 so previews don't slam in at full volume. On iOS
   // Safari, setting .volume is a no-op (system-controlled), which just means
@@ -189,6 +195,10 @@ export function DeezerPreview({ artist, track, preview, cover }) {
       audio.pause()
       audioRef.current = null
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
+      // Playback state belonged to the preview that just went away; the
+      // outer effect used to do this reset before it became derived state.
+      setPlaying(false)
+      setProgress(0)
     }
   }, [data?.preview, fadeIn, cancelFade])
 
