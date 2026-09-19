@@ -6,6 +6,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ### Añadido
 
+- Una letra del título del género se tiñe con su color de EveryNoise. La letra
+  se elige de forma determinista por género (hash del slug sobre las posiciones
+  que no son espacio), así que es estable entre visitas pero varía de un género
+  a otro. Los colores oscuros se aclaran con el `ensureContrast` que ya existía:
+  el `#700087` de asmr se renderiza como `#9b4dab`.
+- Meta tags `og:url` y `twitter:card` para las previsualizaciones de enlaces.
+  **Sin `og:image` ni `twitter:image` a propósito**: apuntaban a
+  `/og-image.png`, que no existe en el repo, y una imagen declarada que
+  devuelve 404 le sienta peor al scraper que no declarar ninguna. El comentario
+  de `index.html` explica qué reponer cuando el PNG exista.
 - Workflow `Lint`, que corre `npm run lint` en cada pull request contra `main`.
   El lint del deploy solo corre en push a `main`, es decir ya mergeado: si una
   rama vieja reintroduce errores, el aviso llegaba con el deploy ya en rojo.
@@ -33,6 +43,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   hueco mayor de la columna. El pie del player entra en la escala de ritmo
   (`--space-3` → D/3). No se crean variables nuevas: solo se reordenan
   `--rhythm-D`, `--rhythm-D-half` y `--rhythm-D-third`.
+- El marquee de la cabecera pasa de 80 s a 120 s por vuelta. Los de la landing
+  se quedan en 80 s.
 - Los hooks `useLastfm`, `useTrack` y `useWikipedia` guardan el dato junto al
   género al que pertenece y descartan el desajuste en render, en vez de
   limpiarlo con un `setState` dentro del efecto. Mismo comportamiento visible
